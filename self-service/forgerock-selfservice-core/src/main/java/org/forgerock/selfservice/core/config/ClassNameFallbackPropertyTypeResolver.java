@@ -53,7 +53,7 @@ class ClassNameFallbackPropertyTypeResolver extends StdTypeResolverBuilder {
     public TypeDeserializer buildTypeDeserializer(
             final DeserializationConfig config, final JavaType baseType, final Collection<NamedType> subtypes) {
         // important to get the normal TypeIdResolver!
-        final TypeIdResolver idRes = this.idResolver(config, baseType,verifyBaseTypeValidity(config, baseType), subtypes, false, true);
+        final TypeIdResolver idRes = this.idResolver(config, baseType, verifyBaseTypeValidity(config, baseType), subtypes, false, true);
         return new ClassNameFallbackPropertyTypeDeserializer(baseType, idRes, _typeProperty, _typeIdVisible,
                 defaultImplAsJavaType(config, baseType));
     }
