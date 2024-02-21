@@ -1,4 +1,4 @@
-name: deploy
+name: Deploy Pages
 
 on:
   push:
@@ -24,15 +24,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          java-version: 17
-      - uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          distribution: "temurin"
+          java-version: "17"
+          cache: "maven"
       - run: mvn -Pmetrics site site:deploy
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: './target/deploy/'
+          path: "./target/deploy/"
       - uses: actions/deploy-pages@v4
