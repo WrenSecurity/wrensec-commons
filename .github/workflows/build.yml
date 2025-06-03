@@ -21,3 +21,11 @@ jobs:
           cache: "maven"
       - name: Check
         run: mvn -B verify
+      - name: Check latest during push
+        if: matrix.java == '17' && github.event_name == 'push'
+        run: mvn clean -B -P metrics verify
+      - name: Test lastest during push
+        if: matrix.java == '17' && github.event_name == 'push'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn sonar:sonar -Dsonar.projectKey=WrenSecurity_wrensec-commons
