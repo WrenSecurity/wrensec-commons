@@ -22,7 +22,7 @@ import static org.forgerock.caf.authentication.framework.AuthStatusUtils.isSendF
 import static org.forgerock.caf.authentication.framework.AuthStatusUtils.isSuccess;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthStatus;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -16,9 +16,9 @@
 
 package org.forgerock.caf.authentication.framework;
 
-import static javax.security.auth.message.AuthStatus.*;
+import static jakarta.security.auth.message.AuthStatus.*;
 
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthStatus;
 
 /**
  * Utility class providing utility methods for determining the meaning behind each of the different {@link AuthStatus}

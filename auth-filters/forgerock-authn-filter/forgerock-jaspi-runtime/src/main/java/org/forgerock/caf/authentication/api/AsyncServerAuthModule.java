@@ -18,8 +18,8 @@ package org.forgerock.caf.authentication.api;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessagePolicy;
 import java.util.Collection;
 import java.util.Map;
 
@@ -27,7 +27,7 @@ import org.forgerock.util.promise.Promise;
 
 /**
  * <p>An asynchronous interface counterpart for the
- * {@link javax.security.auth.message.module.ServerAuthModule}. Responsible for validating and
+ * {@link jakarta.security.auth.message.module.ServerAuthModule}. Responsible for validating and
  * securing request and response messages.</p>
  *
  * <p>Implementations of this interface must be thread-safe as instances may be used processes
@@ -35,8 +35,8 @@ import org.forgerock.util.promise.Promise;
  * store the state in the {@link MessageInfoContext} so that it can be retrieved later for the in
  * the {@link #secureResponse(MessageInfoContext, javax.security.auth.Subject)} method.</p>
  *
- * @see javax.security.auth.message.module.ServerAuthModule
- * @see javax.security.auth.message.MessageInfo
+ * @see jakarta.security.auth.message.module.ServerAuthModule
+ * @see jakarta.security.auth.message.MessageInfo
  * @see Subject
  *
  * @since 2.0.0
@@ -88,8 +88,8 @@ public interface AsyncServerAuthModule {
      *
      * <p>A successfully completed {@code Promise} will contain an {@code AuthStatus} representing
      * the completion status of the message processing. See
-     * {@link javax.security.auth.message.module.ServerAuthModule#validateRequest(
-     * javax.security.auth.message.MessageInfo, Subject, Subject)} for the allowed
+     * {@link jakarta.security.auth.message.module.ServerAuthModule#validateRequest(
+     * jakarta.security.auth.message.MessageInfo, Subject, Subject)} for the allowed
      * {@code AuthStatus} values.</p>
      *
      * <p>A failed completed {@code Promise} will contain an {@code AuthenticationException} when
@@ -97,8 +97,8 @@ public interface AsyncServerAuthModule {
      * {@code MessageContextInfo}.</p>
      *
      * @see AuthStatus
-     * @see javax.security.auth.message.module.ServerAuthModule#validateRequest(
-     * javax.security.auth.message.MessageInfo, Subject, Subject)
+     * @see jakarta.security.auth.message.module.ServerAuthModule#validateRequest(
+     * jakarta.security.auth.message.MessageInfo, Subject, Subject)
      */
     Promise<AuthStatus, AuthenticationException> validateRequest(MessageInfoContext messageInfo, Subject clientSubject,
             Subject serviceSubject);
@@ -114,8 +114,8 @@ public interface AsyncServerAuthModule {
      *
      * <p>A successfully completed {@code Promise} will contain an {@code AuthStatus} representing
      * the completion status of the processing. See
-     * {@link javax.security.auth.message.module.ServerAuthModule#secureResponse(
-     * javax.security.auth.message.MessageInfo, Subject)} for the allowed
+     * {@link jakarta.security.auth.message.module.ServerAuthModule#secureResponse(
+     * jakarta.security.auth.message.MessageInfo, Subject)} for the allowed
      * {@code AuthStatus} values. Note {@link AuthStatus#SEND_CONTINUE} is not supported by this
      * interface</p>
      *
@@ -124,8 +124,8 @@ public interface AsyncServerAuthModule {
      * {@code MessageContextInfo}.</p>
      *
      * @see AuthStatus
-     * @see javax.security.auth.message.module.ServerAuthModule#secureResponse(
-     * javax.security.auth.message.MessageInfo, Subject)
+     * @see jakarta.security.auth.message.module.ServerAuthModule#secureResponse(
+     * jakarta.security.auth.message.MessageInfo, Subject)
      */
     Promise<AuthStatus, AuthenticationException> secureResponse(MessageInfoContext messageInfo, Subject serviceSubject);
 
@@ -139,8 +139,8 @@ public interface AsyncServerAuthModule {
      * contain no value and a failed completed {@code Promise} will contain an
      * {@code AuthenticationException} if an error occurs during the {@code Subject} processing.
      *
-     * @see javax.security.auth.message.module.ServerAuthModule#cleanSubject(
-     * javax.security.auth.message.MessageInfo, Subject)
+     * @see jakarta.security.auth.message.module.ServerAuthModule#cleanSubject(
+     * jakarta.security.auth.message.MessageInfo, Subject)
      */
     Promise<Void, AuthenticationException> cleanSubject(MessageInfoContext messageInfo, Subject clientSubject);
 

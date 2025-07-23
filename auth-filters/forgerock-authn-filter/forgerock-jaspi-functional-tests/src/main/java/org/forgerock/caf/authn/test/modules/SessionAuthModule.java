@@ -20,8 +20,8 @@ import static org.forgerock.caf.authentication.framework.AuditTrail.AUDIT_SESSIO
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessagePolicy;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.HashSet;

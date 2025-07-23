@@ -18,7 +18,7 @@ package org.forgerock.caf.authentication.framework;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthStatus;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;

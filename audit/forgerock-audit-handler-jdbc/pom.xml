@@ -13,7 +13,7 @@
     information: "Portions copyright [year] [name of copyright owner]".
 
     Copyright 2015-2016 ForgeRock AS.
-    Portions Copyright 2017-2021 Wren Security.
+    Portions Copyright 2017-2025 Wren Security.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -21,7 +21,7 @@
     <parent>
         <artifactId>forgerock-audit</artifactId>
         <groupId>org.wrensecurity.commons</groupId>
-        <version>22.7.0-SNAPSHOT</version>
+        <version>23.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>forgerock-audit-handler-jdbc</artifactId>
@@ -32,7 +32,7 @@
     </description>
 
     <properties>
-        <h2database.version>1.4.197</h2database.version>
+        <h2database.version>2.3.232</h2database.version>
     </properties>
 
     <dependencies>

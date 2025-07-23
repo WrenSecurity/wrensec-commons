@@ -21,8 +21,8 @@ import static org.forgerock.caf.authentication.framework.JaspiAdapters.adapt;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.module.ServerAuthModule;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.module.ServerAuthModule;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

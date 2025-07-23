@@ -22,9 +22,9 @@ import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessagePolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

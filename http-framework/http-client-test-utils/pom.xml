@@ -21,7 +21,7 @@
     <parent>
         <artifactId>forgerock-http-framework-parent</artifactId>
         <groupId>org.wrensecurity.http</groupId>
-        <version>22.7.0-SNAPSHOT</version>
+        <version>23.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>http-client-test-utils</artifactId>

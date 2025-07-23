@@ -38,8 +38,8 @@ import java.util.Map;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.module.ServerAuthModule;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.module.ServerAuthModule;
 
 import org.forgerock.caf.authentication.api.AsyncServerAuthModule;
 import org.forgerock.caf.authentication.api.AuthenticationException;

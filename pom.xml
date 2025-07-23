@@ -27,7 +27,7 @@
 
     <groupId>org.wrensecurity.commons</groupId>
     <artifactId>commons-parent</artifactId>
-    <version>22.7.0-SNAPSHOT</version>
+    <version>23.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Wren Security Commons - Parent</name>
@@ -88,6 +88,7 @@
     </repositories>
 
     <properties>
+        <pgpVerifyKeysVersion>1.8.5-SNAPSHOT</pgpVerifyKeysVersion>
         <wrenBuildToolsVersion>1.2.0</wrenBuildToolsVersion>
         <pmdPluginVersion>3.21.2</pmdPluginVersion>
         <jxrPluginVersion>3.3.2</jxrPluginVersion>

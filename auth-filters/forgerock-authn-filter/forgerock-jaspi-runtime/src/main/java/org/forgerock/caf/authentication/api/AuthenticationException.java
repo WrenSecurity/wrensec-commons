@@ -16,7 +16,7 @@
 
 package org.forgerock.caf.authentication.api;
 
-import javax.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthException;
 
 /**
  * A generic authentication exception which accepts a detail message and/or the cause.

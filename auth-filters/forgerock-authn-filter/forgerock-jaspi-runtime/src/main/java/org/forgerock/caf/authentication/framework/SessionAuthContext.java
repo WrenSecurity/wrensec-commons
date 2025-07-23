@@ -19,7 +19,7 @@ package org.forgerock.caf.authentication.framework;
 import static org.forgerock.caf.authentication.framework.AuthModules.*;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthStatus;
 
 import org.forgerock.caf.authentication.api.AsyncServerAuthContext;
 import org.forgerock.caf.authentication.api.AsyncServerAuthModule;

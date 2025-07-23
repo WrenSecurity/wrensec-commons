@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wrensecurity.commons</groupId>
         <artifactId>forgerock-jaspi-modules</artifactId>
-        <version>22.7.0-SNAPSHOT</version>
+        <version>23.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>forgerock-jaspi-openam-session-module</artifactId>
@@ -55,8 +55,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.security.auth.message</artifactId>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
         </dependency>
 
         <dependency>

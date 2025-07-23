@@ -17,13 +17,13 @@
 package org.forgerock.caf.authentication.api;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.AuthStatus;
 
 import org.forgerock.util.promise.Promise;
 
 /**
  * <p>An asynchronous interface counterpart for the
- * {@link javax.security.auth.message.config.ServerAuthContext}. Responsible for passing request
+ * {@link jakarta.security.auth.message.config.ServerAuthContext}. Responsible for passing request
  * and response messages to its configured modules based on the logic this authentication context
  * defines.</p>
  *
@@ -36,7 +36,7 @@ import org.forgerock.util.promise.Promise;
  * later for the in the {@link #secureResponse(MessageContext, javax.security.auth.Subject)}
  * method.</p>
  *
- * @see javax.security.auth.message.config.ServerAuthContext
+ * @see jakarta.security.auth.message.config.ServerAuthContext
  * @see MessageContext
  * @see Subject
  *
@@ -56,8 +56,8 @@ public interface AsyncServerAuthContext {
      *
      * <p>A successfully completed {@code Promise} will contain an {@code AuthStatus} representing
      * the completion status of the message processing. See
-     * {@link javax.security.auth.message.config.ServerAuthContext#validateRequest(
-     * javax.security.auth.message.MessageInfo, Subject, Subject)} for the allowed
+     * {@link jakarta.security.auth.message.config.ServerAuthContext#validateRequest(
+     * jakarta.security.auth.message.MessageInfo, Subject, Subject)} for the allowed
      * {@code AuthStatus} values.</p>
      *
      * <p>A failed completed {@code Promise} will contain an {@code AuthenticationException} when
@@ -65,8 +65,8 @@ public interface AsyncServerAuthContext {
      * {@code MessageContext}.</p>
      *
      * @see AuthStatus
-     * @see javax.security.auth.message.config.ServerAuthContext#validateRequest(
-     * javax.security.auth.message.MessageInfo, Subject, Subject)
+     * @see jakarta.security.auth.message.config.ServerAuthContext#validateRequest(
+     * jakarta.security.auth.message.MessageInfo, Subject, Subject)
      */
     Promise<AuthStatus, AuthenticationException> validateRequest(MessageContext context, Subject clientSubject,
             Subject serviceSubject);
@@ -82,8 +82,8 @@ public interface AsyncServerAuthContext {
      *
      * <p>A successfully completed {@code Promise} will contain an {@code AuthStatus} representing
      * the completion status of the processing. See
-     * {@link javax.security.auth.message.config.ServerAuthContext#secureResponse(
-     * javax.security.auth.message.MessageInfo, Subject)} for the allowed
+     * {@link jakarta.security.auth.message.config.ServerAuthContext#secureResponse(
+     * jakarta.security.auth.message.MessageInfo, Subject)} for the allowed
      * {@code AuthStatus} values. Note {@link AuthStatus#SEND_CONTINUE} is not supported by this
      * interface</p>
      *
@@ -92,8 +92,8 @@ public interface AsyncServerAuthContext {
      * {@code MessageContext}.</p>
      *
      * @see AuthStatus
-     * @see javax.security.auth.message.config.ServerAuthContext#secureResponse(
-     * javax.security.auth.message.MessageInfo, Subject)
+     * @see jakarta.security.auth.message.config.ServerAuthContext#secureResponse(
+     * jakarta.security.auth.message.MessageInfo, Subject)
      */
     Promise<AuthStatus, AuthenticationException> secureResponse(MessageContext context, Subject serviceSubject);
 
@@ -107,8 +107,8 @@ public interface AsyncServerAuthContext {
      * contain no value and a failed completed {@code Promise} will contain an
      * {@code AuthenticationException} if an error occurs during the {@code Subject} processing.
      *
-     * @see javax.security.auth.message.config.ServerAuthContext#cleanSubject(
-     * javax.security.auth.message.MessageInfo, Subject)
+     * @see jakarta.security.auth.message.config.ServerAuthContext#cleanSubject(
+     * jakarta.security.auth.message.MessageInfo, Subject)
      */
     Promise<Void, AuthenticationException> cleanSubject(MessageContext context, Subject clientSubject);
 

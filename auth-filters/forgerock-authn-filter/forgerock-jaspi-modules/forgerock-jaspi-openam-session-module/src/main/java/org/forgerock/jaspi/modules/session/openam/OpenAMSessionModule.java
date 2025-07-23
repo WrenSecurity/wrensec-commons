@@ -17,7 +17,7 @@
 package org.forgerock.jaspi.modules.session.openam;
 
 import static java.lang.String.format;
-import static javax.security.auth.message.AuthStatus.*;
+import static jakarta.security.auth.message.AuthStatus.*;
 import static org.forgerock.caf.authentication.framework.AuthenticationFramework.LOG;
 import static org.forgerock.http.protocol.Responses.noopExceptionFunction;
 import static org.forgerock.json.JsonValue.json;
@@ -39,9 +39,9 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.callback.CallerPrincipalCallback;
 
 import org.forgerock.caf.authentication.api.AsyncServerAuthModule;
 import org.forgerock.caf.authentication.api.AuthenticationException;

@@ -21,7 +21,7 @@
     <parent>
         <artifactId>forgerock-selfservice</artifactId>
         <groupId>org.wrensecurity.commons</groupId>
-        <version>22.7.0-SNAPSHOT</version>
+        <version>23.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>forgerock-selfservice-stages</artifactId>

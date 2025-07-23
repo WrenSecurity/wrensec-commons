@@ -22,8 +22,8 @@ import static org.forgerock.caf.authn.test.modules.SessionAuthModule.SESSION_MOD
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessagePolicy;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.HashSet;

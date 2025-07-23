@@ -35,9 +35,9 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessageInfo;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.callback.CallerPrincipalCallback;
 
 import org.forgerock.caf.authentication.api.AuthenticationException;
 import org.forgerock.caf.authentication.framework.AuthenticationFramework;
@@ -443,8 +443,8 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
      *
      * @param messageInfo The message context info for this request.
      * @return {@code AuthStatus} representing the completion status of the processing. See
-     * {@link javax.security.auth.message.module.ServerAuthModule#secureResponse(
-     * javax.security.auth.message.MessageInfo, Subject)} for the allowed
+     * {@link jakarta.security.auth.message.module.ServerAuthModule#secureResponse(
+     * jakarta.security.auth.message.MessageInfo, Subject)} for the allowed
      * {@code AuthStatus} values. Note {@link AuthStatus#SEND_CONTINUE} is not supported by this
      * interface
      * @throws AuthenticationException If message processing failed without establishing a failure response

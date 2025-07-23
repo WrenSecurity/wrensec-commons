@@ -27,7 +27,7 @@ import org.forgerock.services.context.Context;
  * class may also be used to associate additional context in the form of key/value pairs, with the
  * encapsulated messages.</p>
  *
- * @see javax.security.auth.message.MessageInfo
+ * @see jakarta.security.auth.message.MessageInfo
  *
  * @since 2.0.0
  */

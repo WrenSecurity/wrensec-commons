@@ -17,15 +17,15 @@
 
 package org.forgerock.jaspi.modules.iwa;
 
-import static javax.security.auth.message.AuthStatus.*;
+import static jakarta.security.auth.message.AuthStatus.*;
 import static org.forgerock.caf.authentication.framework.AuthenticationFramework.LOG;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessagePolicy;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
