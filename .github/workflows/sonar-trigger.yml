@@ -1,0 +1,21 @@
+name: Trigger Sonar analysis
+
+on:
+  workflow_run:
+    workflows:
+      - Check pull
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    if: github.event.workflow_run.conclusion == 'success'
+    name: Trigger Sonar analysis
+    uses: WrenSecurity/.github/.github/workflows/sonar-pull-maven.yml@main
+    with:
+      workflow_run: ${{ toJSON(github.event.workflow_run) }}
+    secrets:
+      sonar_token: ${{ secrets.SONAR_TOKEN }}

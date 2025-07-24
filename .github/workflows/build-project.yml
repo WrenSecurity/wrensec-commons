@@ -1,8 +1,10 @@
-name: Build
+name: Build project
 
 on:
-  push:
-  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -12,12 +14,13 @@ jobs:
         java: [11, 17]
     name: "Java ${{ matrix.java }} build"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout project
+        uses: actions/checkout@v4
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "${{ matrix.java }}"
           cache: "maven"
-      - name: Check
+      - name: Verify build
         run: mvn -B verify

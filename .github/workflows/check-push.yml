@@ -1,0 +1,22 @@
+name: Check push
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build project
+    uses: ./.github/workflows/build-project.yml
+  sonar:
+    needs: build
+    name: Sonar analysis
+    if: github.ref_name == 'main'
+    uses: WrenSecurity/.github/.github/workflows/sonar-maven.yml@main
+    with:
+      java-version: "17"
+      project-key: "WrenSecurity_wrensec-commons"
+    secrets:
+      sonar_token: ${{ secrets.SONAR_TOKEN }}

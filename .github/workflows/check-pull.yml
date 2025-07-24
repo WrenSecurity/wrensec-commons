@@ -1,0 +1,18 @@
+name: Check pull
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build project
+    uses: ./.github/workflows/build-project.yml
+  sonar:
+    needs: build
+    name: Prepare analysis context
+    uses: WrenSecurity/.github/.github/workflows/sonar-pull-prepare.yml@main
+    with:
+      pull_request: ${{ toJSON(github.event.pull_request) }}
