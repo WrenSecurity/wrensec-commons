@@ -23,4 +23,4 @@ jobs:
           java-version: "${{ matrix.java }}"
           cache: "maven"
       - name: Verify build
-        run: mvn verify
+        run: mvn -B verify
