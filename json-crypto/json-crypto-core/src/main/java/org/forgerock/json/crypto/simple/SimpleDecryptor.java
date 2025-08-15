@@ -12,6 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyrighted 2025 Wren Security
  */
 
 package org.forgerock.json.crypto.simple;
@@ -106,7 +107,7 @@ public class SimpleDecryptor implements JsonDecryptor {
                 }
 
                 symmetricKey = HKDFKeyGenerator.expandKey(masterKey, symmetricKey.getAlgorithm(),
-                        SimpleEncryptor.ASYMMETRIC_AES_KEY_SIZE);
+                        key.isString() ? symmetricKey.getEncoded().length : SimpleEncryptor.ASYMMETRIC_AES_KEY_SIZE);
             }
 
             Cipher symmetric = Cipher.getInstance(cipher);

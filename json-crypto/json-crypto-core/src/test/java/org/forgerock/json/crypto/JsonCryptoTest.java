@@ -12,6 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright 2011-2016 ForgeRock AS.
+ * Portions Copyrighted 2025 Wren Security
  */
 
 package org.forgerock.json.crypto;
@@ -37,6 +38,7 @@ import org.forgerock.json.crypto.simple.SimpleEncryptor;
 import org.forgerock.json.crypto.simple.SimpleKeySelector;
 import org.forgerock.util.encode.Base64;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 public class JsonCryptoTest {
@@ -69,13 +71,16 @@ public class JsonCryptoTest {
 
     // ----- initialization ----------
 
+    private SecretKey generateSymmetricKey(int keySize) throws GeneralSecurityException {
+        KeyGenerator kg = KeyGenerator.getInstance("AES");
+        kg.init(keySize);
+        return kg.generateKey();
+    }
+
     @BeforeClass
     public void beforeClass() throws GeneralSecurityException {
-
-        // generate AES 128-bit secret key
-        KeyGenerator kg = KeyGenerator.getInstance("AES");
-        kg.init(128); // the Sun JRE out of the box restricts to 128-bit key length
-        secretKey = kg.generateKey();
+        // generate AES 128-bit secret key (Sun JRE restricts to 128-bit key length)
+        secretKey = generateSymmetricKey(128);
 
         // generate RSA 1024-bit key pair
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
@@ -87,12 +92,20 @@ public class JsonCryptoTest {
 
     // ----- happy path ----------
 
-    @Test
-    public void testSymmetricEncryption() throws JsonCryptoException {
+    @DataProvider
+    public Object[][] symmetricKeys() throws GeneralSecurityException {
+        return new Object[][] {
+            { secretKey },
+            { generateSymmetricKey(256) }
+        };
+    }
+
+    @Test(dataProvider = "symmetricKeys")
+    public void testSymmetricEncryption(Key secretKey) throws JsonCryptoException {
         JsonValue value = new JsonValue(PLAINTEXT);
         value = new SimpleEncryptor(SYMMETRIC_CIPHER, secretKey, "secretKey").encrypt(value);
         assertThat(value.getObject()).isNotEqualTo(PLAINTEXT);
-        value = new SimpleDecryptor(selector).decrypt(value);
+        value = new SimpleDecryptor(Map.of("secretKey", secretKey)::get).decrypt(value);
         assertThat(value.getObject()).isEqualTo(PLAINTEXT);
     }
 
