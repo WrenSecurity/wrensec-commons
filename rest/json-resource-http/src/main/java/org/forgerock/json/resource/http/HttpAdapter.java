@@ -26,7 +26,6 @@ import static org.forgerock.json.resource.Requests.newApiRequest;
 import static org.forgerock.json.resource.ResourcePath.resourcePath;
 import static org.forgerock.json.resource.http.HttpUtils.CONTENT_TYPE_REGEX;
 import static org.forgerock.json.resource.http.HttpUtils.ETAG_ANY;
-import static org.forgerock.json.resource.http.HttpUtils.FIELDS_DELIMITER;
 import static org.forgerock.json.resource.http.HttpUtils.HEADER_IF_MATCH;
 import static org.forgerock.json.resource.http.HttpUtils.HEADER_IF_MODIFIED_SINCE;
 import static org.forgerock.json.resource.http.HttpUtils.HEADER_IF_NONE_MATCH;
@@ -61,7 +60,6 @@ import static org.forgerock.json.resource.http.HttpUtils.getJsonPatchContent;
 import static org.forgerock.json.resource.http.HttpUtils.getMethod;
 import static org.forgerock.json.resource.http.HttpUtils.getParameter;
 import static org.forgerock.json.resource.http.HttpUtils.getRequestedResourceVersion;
-import static org.forgerock.json.resource.http.HttpUtils.prepareResponse;
 import static org.forgerock.json.resource.http.HttpUtils.rejectIfMatch;
 import static org.forgerock.json.resource.http.HttpUtils.rejectIfNoneMatch;
 import static org.forgerock.json.resource.http.HttpUtils.staticContextFactory;
@@ -305,9 +303,6 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
         try {
             Version requestedResourceVersion = getRequestedResourceVersion(req);
 
-            // Prepare response.
-            Response resp = prepareResponse(req);
-
             // Validate request.
             preprocessRequest(req);
             rejectIfNoneMatch(req);
@@ -328,7 +323,7 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                     request.setAdditionalParameter(name, asSingleValue(name, values));
                 }
             }
-            return doRequest(context, req, resp, request);
+            return doRequest(context, req, request);
         } catch (final Exception e) {
             return fail(req, e);
         }
@@ -337,9 +332,6 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
     Promise<Response, NeverThrowsException> doRead(Context context, org.forgerock.http.protocol.Request req) {
         try {
             Version requestedResourceVersion = getRequestedResourceVersion(req);
-
-            // Prepare response.
-            Response resp = prepareResponse(req);
 
             // Validate request.
             preprocessRequest(req);
@@ -362,20 +354,12 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                 if (parseCommonParameter(name, values, request)) {
                     continue;
                 } else if (PARAM_MIME_TYPE.equalsIgnoreCase(name)) {
-                    if (values.size() != 1 || values.get(0).split(FIELDS_DELIMITER).length > 1) {
-                        // FIXME: i18n.
-                        throw new BadRequestException("Only one mime type value allowed");
-                    }
-                    if (parameters.get(PARAM_FIELDS).size() != 1) {
-                        // FIXME: i18n.
-                        throw new BadRequestException("The mime type parameter requires only "
-                                + "1 field to be specified");
-                    }
+                    // simply ignore -> support for custom MIME type is up to handler implementation
                 } else {
                     request.setAdditionalParameter(name, asSingleValue(name, values));
                 }
             }
-            return doRequest(context, req, resp, request);
+            return doRequest(context, req, request);
         } catch (final Exception e) {
             return fail(req, e);
         }
@@ -384,9 +368,6 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
     Promise<Response, NeverThrowsException> doQuery(Context context, org.forgerock.http.protocol.Request req) {
         try {
             Version requestedResourceVersion = getRequestedResourceVersion(req);
-
-            // Prepare response.
-            Response resp = prepareResponse(req);
 
             // Validate request.
             preprocessRequest(req);
@@ -477,7 +458,7 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                         + PARAM_PAGED_RESULTS_COOKIE + " are mutually exclusive");
             }
 
-            return doRequest(context, req, resp, request);
+            return doRequest(context, req, request);
         } catch (final Exception e) {
             return fail(req, e);
         }
@@ -486,9 +467,6 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
     Promise<Response, NeverThrowsException> doPatch(Context context, org.forgerock.http.protocol.Request req) {
         try {
             Version requestedResourceVersion = getRequestedResourceVersion(req);
-
-            // Prepare response.
-            Response resp = prepareResponse(req);
 
             // Validate request.
             preprocessRequest(req);
@@ -515,7 +493,7 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                     request.setAdditionalParameter(name, asSingleValue(name, values));
                 }
             }
-            return doRequest(context, req, resp, request);
+            return doRequest(context, req, request);
         } catch (final Exception e) {
             return fail(req, e);
         }
@@ -524,8 +502,6 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
     Promise<Response, NeverThrowsException> doCreate(Context context, org.forgerock.http.protocol.Request req) {
         try {
             Version requestedResourceVersion = getRequestedResourceVersion(req);
-            // Prepare response.
-            Response resp = prepareResponse(req);
 
             // Validate request.
             preprocessRequest(req);
@@ -551,7 +527,7 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                         request.setAdditionalParameter(name, asSingleValue(name, values));
                     }
                 }
-                return doRequest(context, req, resp, request);
+                return doRequest(context, req, request);
             } else {
 
                 if (req.getHeaders().getFirst(HEADER_IF_MATCH) != null
@@ -586,7 +562,7 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                         request.setAdditionalParameter(name, asSingleValue(name, values));
                     }
                 }
-                return doRequest(context, req, resp, request);
+                return doRequest(context, req, request);
             }
         } catch (final Exception e) {
             return fail(req, e);
@@ -596,9 +572,6 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
     Promise<Response, NeverThrowsException> doAction(Context context, org.forgerock.http.protocol.Request req) {
         try {
             Version requestedResourceVersion = getRequestedResourceVersion(req);
-
-            // Prepare response.
-            Response resp = prepareResponse(req);
 
             // Validate request.
             preprocessRequest(req);
@@ -624,7 +597,7 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                     request.setAdditionalParameter(name, asSingleValue(name, values));
                 }
             }
-            return doRequest(context, req, resp, request);
+            return doRequest(context, req, request);
         } catch (final Exception e) {
             return fail(req, e);
         }
@@ -633,9 +606,6 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
     Promise<Response, NeverThrowsException> doUpdate(Context context, org.forgerock.http.protocol.Request req) {
         try {
             Version requestedResourceVersion = getRequestedResourceVersion(req);
-
-            // Prepare response.
-            Response resp = prepareResponse(req);
 
             // Validate request.
             preprocessRequest(req);
@@ -665,13 +635,12 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
                     request.setAdditionalParameter(name, asSingleValue(name, values));
                 }
             }
-            return doRequest(context, req, resp, request);
+            return doRequest(context, req, request);
         } catch (final Exception e) {
             return fail(req, e);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Promise<Response, NeverThrowsException> doApiRequest(Context context,
             final org.forgerock.http.protocol.Request req) {
         try {
@@ -715,9 +684,9 @@ final class HttpAdapter implements Handler, Describable<Swagger, org.forgerock.h
     }
 
     private Promise<Response, NeverThrowsException> doRequest(Context context, org.forgerock.http.protocol.Request req,
-            Response resp, Request request) throws Exception {
+            Request request) throws Exception {
         Context ctx = prepareRequest(context, req, request);
-        final RequestRunner runner = new RequestRunner(ctx, request, req, resp);
+        final RequestRunner runner = new RequestRunner(ctx, request, req, new Response(Status.OK));
         return connectionFactory.getConnectionAsync()
                 .thenAsync(new AsyncFunction<Connection, Response, NeverThrowsException>() {
                     @Override
