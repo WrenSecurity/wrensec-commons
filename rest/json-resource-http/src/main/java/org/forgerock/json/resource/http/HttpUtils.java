@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2012-2016 ForgeRock AS.
+ * Portions copyright 2026 Wren Security
  */
 
 package org.forgerock.json.resource.http;
@@ -294,11 +295,12 @@ public final class HttpUtils {
         final ResourceException re = adapt(t);
         try {
             if (resp == null) {
-                resp = prepareResponse(req);
+                resp = new Response(Status.valueOf(re.getCode()));
             } else {
-                resp = prepareResponse(req, resp);
+                resp.setStatus(Status.valueOf(re.getCode()));
             }
-            resp.setStatus(Status.valueOf(re.getCode()));
+            writeContentTypeHeader(req, resp);
+            writeCacheControlHeader(req, resp);
             final JsonGenerator writer = getJsonGenerator(req, resp);
             Json.makeLocalizingObjectWriter(JSON_MAPPER, req).writeValue(writer, re.toJsonValue().getObject());
             closeSilently(writer);
@@ -677,29 +679,16 @@ public final class HttpUtils {
         return getParameter(req, parameter) != null;
     }
 
-    static Response prepareResponse(org.forgerock.http.protocol.Request req) throws ResourceException {
-        return prepareResponse(req, new Response(Status.OK));
+    static void writeContentTypeHeader(org.forgerock.http.protocol.Request req,
+            org.forgerock.http.protocol.Response resp) throws ResourceException {
+        if (!resp.getHeaders().containsKey(ContentTypeHeader.NAME)) {
+            resp.getHeaders().add(new ContentTypeHeader(MIME_TYPE_APPLICATION_JSON, CHARACTER_ENCODING, null));
+        }
     }
 
-    static Response prepareResponse(org.forgerock.http.protocol.Request req, org.forgerock.http.protocol.Response resp)
-            throws ResourceException {
-        //get content type from req path
-        try {
-            resp.setStatus(Status.OK);
-            String mimeType = req.getForm().getFirst(PARAM_MIME_TYPE);
-            if (METHOD_GET.equalsIgnoreCase(getMethod(req)) && mimeType != null && !mimeType.isEmpty()) {
-                ContentType contentType = new ContentType(mimeType);
-                resp.getHeaders().put(new ContentTypeHeader(contentType.toString(), CHARACTER_ENCODING, null));
-            } else {
-                resp.getHeaders().put(new ContentTypeHeader(MIME_TYPE_APPLICATION_JSON, CHARACTER_ENCODING, null));
-            }
-
-            resp.getHeaders().put(HEADER_CACHE_CONTROL, CACHE_CONTROL);
-            return resp;
-        } catch (ParseException e) {
-            throw new BadRequestException("The mime type parameter '" + req.getForm().getFirst(PARAM_MIME_TYPE)
-                    + "' can't be parsed", e);
-        }
+    static void writeCacheControlHeader(org.forgerock.http.protocol.Request req,
+            org.forgerock.http.protocol.Response resp) throws ResourceException {
+        resp.getHeaders().put(HEADER_CACHE_CONTROL, CACHE_CONTROL);
     }
 
     static void rejectIfMatch(org.forgerock.http.protocol.Request req) throws ResourceException {
@@ -925,18 +914,22 @@ public final class HttpUtils {
             this.request = request;
         }
 
+        @Override
         public InputStream getInputStream() throws IOException {
             return request.getEntity().getRawContentInputStream();
         }
 
+        @Override
         public OutputStream getOutputStream() throws IOException {
             return null;
         }
 
+        @Override
         public String getContentType() {
             return request.getHeaders().getFirst(ContentTypeHeader.class);
         }
 
+        @Override
         public String getName() {
             return "HttpServletRequestDataSource";
         }

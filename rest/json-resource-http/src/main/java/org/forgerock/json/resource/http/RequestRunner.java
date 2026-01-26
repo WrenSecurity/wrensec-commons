@@ -39,6 +39,8 @@ import static org.forgerock.json.resource.http.HttpUtils.fail;
 import static org.forgerock.json.resource.http.HttpUtils.getIfNoneMatch;
 import static org.forgerock.json.resource.http.HttpUtils.getJsonGenerator;
 import static org.forgerock.json.resource.http.HttpUtils.getRequestedProtocolVersion;
+import static org.forgerock.json.resource.http.HttpUtils.writeCacheControlHeader;
+import static org.forgerock.json.resource.http.HttpUtils.writeContentTypeHeader;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
@@ -152,8 +154,10 @@ final class RequestRunner implements RequestVisitor<Promise<Response, NeverThrow
                     public Promise<Response, NeverThrowsException> apply(ActionResponse result) {
                         try {
                             writeApiVersionHeaders(result);
+                            writeCacheControlHeader(httpRequest, httpResponse);
                             writeAdvice();
                             if (result != null) {
+                                writeContentTypeHeader(httpRequest, httpResponse);
                                 Json.makeLocalizingObjectWriter(JSON_MAPPER, httpRequest)
                                         .writeValue(jsonGenerator, result.getJsonContent().getObject());
                             } else {
@@ -191,6 +195,8 @@ final class RequestRunner implements RequestVisitor<Promise<Response, NeverThrow
                                 httpResponse.getHeaders().put(HEADER_LOCATION, getResourceURL(result, request));
                             }
                             httpResponse.setStatus(Status.CREATED);
+                            writeContentTypeHeader(httpRequest, httpResponse);
+                            writeCacheControlHeader(httpRequest, httpResponse);
                             writeResource(result);
                             onSuccess();
                         } catch (final Exception e) {
@@ -327,6 +333,8 @@ final class RequestRunner implements RequestVisitor<Promise<Response, NeverThrow
         if (isFirstResult.compareAndSet(true, false)) {
             writeApiVersionHeaders(response);
             writeAdvice();
+            writeContentTypeHeader(httpRequest, httpResponse);
+            writeCacheControlHeader(httpRequest, httpResponse);
             jsonGenerator.writeStartObject();
             jsonGenerator.writeArrayFieldStart(FIELD_RESULT);
         }
@@ -417,6 +425,8 @@ final class RequestRunner implements RequestVisitor<Promise<Response, NeverThrow
                                     .setEntity(responseBody));
                         }
                     }
+                    writeContentTypeHeader(httpRequest, httpResponse);
+                    writeCacheControlHeader(httpRequest, httpResponse);
                     writeResource(result);
                     onSuccess();
                 } catch (final Exception e) {

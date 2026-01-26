@@ -88,7 +88,7 @@
     </repositories>
 
     <properties>
-        <pgpVerifyKeysVersion>1.9.0</pgpVerifyKeysVersion>
+        <pgpVerifyKeysVersion>1.9.7</pgpVerifyKeysVersion>
 
         <activation.version>2.0.0</activation.version>
         <assertj.version>3.19.0</assertj.version>

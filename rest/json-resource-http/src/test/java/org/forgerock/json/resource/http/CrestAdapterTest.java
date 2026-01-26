@@ -910,7 +910,7 @@ public class CrestAdapterTest {
                 @Override
                 public Promise<ResourceResponse, ResourceException> handleRead(final Context context,
                                                                                final ReadRequest request) {
-                	
+
                     return newResourceResponse("ae32f", "1", request.toJsonValue()).asPromise();
                 }
 
