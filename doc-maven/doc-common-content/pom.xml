@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wrensecurity.commons</groupId>
         <artifactId>doc-maven</artifactId>
-        <version>22.6.2</version>
+        <version>22.6.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>doc-common-content</artifactId>

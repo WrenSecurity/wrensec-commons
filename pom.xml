@@ -27,7 +27,7 @@
 
     <groupId>org.wrensecurity.commons</groupId>
     <artifactId>commons-parent</artifactId>
-    <version>22.6.2</version>
+    <version>22.6.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Wren Security Commons - Parent</name>
@@ -54,7 +54,7 @@
         <url>https://github.com/WrenSecurity/wrensec-commons</url>
         <connection>scm:git:git://github.com/WrenSecurity/wrensec-commons.git</connection>
         <developerConnection>scm:git:git@github.com:WrenSecurity/wrensec-commons.git</developerConnection>
-        <tag>22.6.2</tag>
+        <tag>sustaining/22.x</tag>
     </scm>
 
     <repositories>

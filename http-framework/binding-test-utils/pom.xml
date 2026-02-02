@@ -21,7 +21,7 @@
     <parent>
         <artifactId>forgerock-http-framework-parent</artifactId>
         <groupId>org.wrensecurity.http</groupId>
-        <version>22.6.2</version>
+        <version>22.6.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>binding-test-utils</artifactId>
