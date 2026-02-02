@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wrensecurity.commons</groupId>
         <artifactId>forgerock-audit</artifactId>
-        <version>22.6.2-SNAPSHOT</version>
+        <version>22.6.2</version>
     </parent>
 
     <artifactId>forgerock-audit-handler-elasticsearch</artifactId>
