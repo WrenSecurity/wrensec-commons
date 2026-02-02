@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wrensecurity</groupId>
         <artifactId>wrensec-parent</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.2</version>
         <relativePath />
     </parent>
 
@@ -88,7 +88,7 @@
     </repositories>
 
     <properties>
-        <pgpVerifyKeysVersion>1.7.6</pgpVerifyKeysVersion>
+        <pgpVerifyKeysVersion>1.9.7</pgpVerifyKeysVersion>
         <wrenBuildToolsVersion>1.2.0</wrenBuildToolsVersion>
         <pmdPluginVersion>3.21.2</pmdPluginVersion>
         <jxrPluginVersion>3.3.2</jxrPluginVersion>
