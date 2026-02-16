@@ -21,7 +21,7 @@
     <parent>
         <artifactId>chf-http-examples</artifactId>
         <groupId>org.wrensecurity.http</groupId>
-        <version>23.0.0-M2-SNAPSHOT</version>
+        <version>23.0.0-M2</version>
     </parent>
 
     <artifactId>http-descriptor-example</artifactId>

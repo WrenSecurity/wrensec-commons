@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wrensecurity.commons</groupId>
         <artifactId>json-schema</artifactId>
-        <version>23.0.0-M2-SNAPSHOT</version>
+        <version>23.0.0-M2</version>
     </parent>
 
     <artifactId>json-schema-core</artifactId>
