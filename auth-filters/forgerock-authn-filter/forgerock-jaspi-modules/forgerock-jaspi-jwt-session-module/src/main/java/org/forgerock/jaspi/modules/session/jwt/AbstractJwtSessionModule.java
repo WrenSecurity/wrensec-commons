@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2013-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.jaspi.modules.session.jwt;
@@ -19,6 +20,9 @@ package org.forgerock.jaspi.modules.session.jwt;
 import static org.forgerock.caf.authentication.framework.AuditTrail.AUDIT_SESSION_ID_KEY;
 import static org.forgerock.caf.authentication.framework.AuthenticationFramework.LOG;
 
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.callback.CallerPrincipalCallback;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.Key;
@@ -35,10 +39,6 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import jakarta.security.auth.message.AuthStatus;
-import jakarta.security.auth.message.MessageInfo;
-import jakarta.security.auth.message.callback.CallerPrincipalCallback;
-
 import org.forgerock.caf.authentication.api.AuthenticationException;
 import org.forgerock.caf.authentication.framework.AuthenticationFramework;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
@@ -54,8 +54,6 @@ import org.forgerock.json.jose.jwt.Jwt;
 import org.forgerock.json.jose.jwt.JwtClaimsSet;
 import org.forgerock.security.keystore.KeyStoreBuilder;
 import org.forgerock.security.keystore.KeyStoreManager;
-import org.forgerock.security.keystore.KeyStoreType;
-import org.forgerock.util.Utils;
 import org.forgerock.util.encode.Base64;
 
 /**
@@ -67,7 +65,7 @@ import org.forgerock.util.encode.Base64;
  *
  * @since 1.0.0
  */
-abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
+abstract class AbstractJwtSessionModule<C> {
 
     private static final String DEFAULT_JWT_SESSION_COOKIE_NAME = "session-jwt";
     private static final String SKIP_SESSION_PARAMETER_NAME = "skipSession";
@@ -114,7 +112,7 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
 
     private String keyAlias;
     private String privateKeyPassword;
-    private KeyStoreType keystoreType;
+    private String keystoreType;
     private String keystoreFile;
     private String keystorePassword;
     String sessionCookieName;
@@ -155,7 +153,7 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
         this.handler = handler;
         this.keyAlias = (String) options.get(KEY_ALIAS_KEY);
         this.privateKeyPassword = (String) options.get(PRIVATE_KEY_PASSWORD_KEY);
-        this.keystoreType = Utils.asEnum((String) options.get(KEYSTORE_TYPE_KEY), KeyStoreType.class);
+        this.keystoreType = (String) options.get(KEYSTORE_TYPE_KEY);
         this.keystoreFile = (String) options.get(KEYSTORE_FILE_KEY);
         this.keystorePassword = (String) options.get(KEYSTORE_PASSWORD_KEY);
         this.sessionCookieName = (String) options.get(SESSION_COOKIE_NAME_KEY);
@@ -215,7 +213,6 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
      * @throws AuthenticationException If there is a problem validating the request.
      */
     public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject) throws AuthenticationException {
-
         Jwt jwt = validateJwtSessionCookie(messageInfo);
         if (jwt == null) {
             LOG.debug("Session JWT NOT valid");
@@ -259,17 +256,15 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
      * @return The Jwt if successfully validated otherwise null.
      */
     public Jwt validateJwtSessionCookie(MessageInfo messageInfo) {
-
-        C jwtSessionCookie = findJwtSessionCookie(messageInfo);
+        String jwtSessionCookie = findJwtSessionCookie(messageInfo);
         if (jwtSessionCookie != null) {
             LOG.debug("Session JWT cookie found");
         }
 
-        if (jwtSessionCookie != null && !isEmpty(jwtSessionCookie.getValue())) {
-
+        if (jwtSessionCookie != null && !isEmpty(jwtSessionCookie)) {
             final Jwt jwt;
             try {
-                jwt = verifySessionJwt(jwtSessionCookie.getValue());
+                jwt = verifySessionJwt(jwtSessionCookie);
             } catch (InvalidJwtException e) {
                 LOG.debug("Invalid Jwt content", e);
                 return null;
@@ -307,7 +302,7 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
         return null;
     }
 
-    abstract C findJwtSessionCookie(MessageInfo messageInfo);
+    abstract String findJwtSessionCookie(MessageInfo messageInfo);
 
     abstract void setClaimsOnRequest(MessageInfo messageInfo, Jwt jwt);
 
@@ -374,7 +369,6 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
      * @return If the request was made one minute after the Jwt was issued.
      */
     private boolean hasCoolOffPeriodExpired(Jwt jwt) {
-
         Date issuedAtTime = jwt.getClaimsSet().getIssuedAtTime();
 
         Calendar calendar = Calendar.getInstance();
@@ -393,7 +387,6 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
      * @throws FileNotFoundException If unable to load keystore.
      */
     private void resetIdleTimeout(Jwt jwt, MessageInfo messageInfo) throws FileNotFoundException {
-
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.set(Calendar.MILLISECOND, 0);
@@ -551,7 +544,7 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
                 .enc(EncryptionMethod.A128CBC_HS256)
                 .done()
                 .claims(claimsSet)
-                .sign(signingHandler, SIGNING_ALGORITHM)
+                .signedWith(signingHandler, SIGNING_ALGORITHM)
                 .build();
     }
 
@@ -566,7 +559,7 @@ abstract class AbstractJwtSessionModule<C extends JwtSessionCookie> {
      */
     private int getCookieMaxAge(Date now, Date exp) {
         if (!browserSessionOnly) {
-            return new Long((exp.getTime() - now.getTime()) / 1000L).intValue();
+            return (int) ((exp.getTime() - now.getTime()) / 1000L);
         } else {
             return -1;
         }

@@ -12,29 +12,25 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.jaspi.modules.session.jwt;
 
-import static org.forgerock.caf.http.Cookie.getCookies;
-import static org.forgerock.caf.http.Cookie.newCookie;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
 import jakarta.security.auth.message.AuthException;
 import jakarta.security.auth.message.AuthStatus;
 import jakarta.security.auth.message.MessageInfo;
 import jakarta.security.auth.message.MessagePolicy;
 import jakarta.security.auth.message.module.ServerAuthModule;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
 import org.forgerock.caf.authentication.framework.AuthenticationFramework;
-import org.forgerock.caf.http.Cookie;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
 import org.forgerock.json.jose.jwt.Jwt;
 
@@ -86,19 +82,14 @@ public class ServletJwtSessionModule extends AbstractJwtSessionModule<Cookie> im
         return super.validateJwtSessionCookie(messageInfo);
     }
 
-    /**
-     * Find a session cookie in the given message info.
-     * @param messageInfo The message info.
-     * @return The cookie, or null.
-     */
     @Override
-    public Cookie findJwtSessionCookie(MessageInfo messageInfo) {
+    String findJwtSessionCookie(MessageInfo messageInfo) {
         HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
-        Set<Cookie> cookies = getCookies(request);
+        Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (sessionCookieName.equals(cookie.getName())) {
-                    return cookie;
+                    return cookie.getValue();
                 }
             }
         }
@@ -121,7 +112,7 @@ public class ServletJwtSessionModule extends AbstractJwtSessionModule<Cookie> im
     Collection<Cookie> createCookies(String value, int maxAge, String path) {
         Collection<Cookie> cookies = new HashSet<>();
         for (String cookieDomain : cookieDomains) {
-            Cookie cookie = newCookie(sessionCookieName, value);
+            Cookie cookie = new Cookie(sessionCookieName, value);
             cookie.setMaxAge(maxAge);
             cookie.setPath(path);
             cookie.setDomain(cookieDomain);
@@ -135,7 +126,9 @@ public class ServletJwtSessionModule extends AbstractJwtSessionModule<Cookie> im
     @Override
     void addCookiesToResponse(Collection<Cookie> cookies, MessageInfo messageInfo) {
         HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
-        Cookie.addCookies(cookies, response);
+        for (Cookie cookie : cookies) {
+            response.addCookie(cookie);
+        }
     }
 
     @Override

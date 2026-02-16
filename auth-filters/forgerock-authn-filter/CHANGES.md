@@ -1,8 +1,14 @@
-20.1.0
+# Change Log
+
+## 23.0.0
+
+* Removed support for Servlet 2.5
+
+## 20.1.0
 
 Fixed COMMONS-102.
 
-2.0.0
+## 2.0.0
 
 To use create an instance of the FallbackServerAuthContext you need to wire in the following interfaces/classes with
 the specified scope:
@@ -26,12 +32,7 @@ ServerAuthContext instance can be changed/updated with new ServerAuthModules and
 runtime for subsequent authentication requests.
 
 
-
-
-
------------------------------------------
-
-1.5.0
+## 1.5.0
 
 Added new properties to MessageInfo map:
 * org.forgerock.authentication.audit.trail - available to ServerAuthContext's only
@@ -97,6 +98,6 @@ init-param with the name 'audit-api-class' with a value of the fully qualified c
 NOTE: Deprecated classes and methods will be removed in the next major release.
 
 
---- MODULE CHANGES ---
+MODULE CHANGES:
 
-JwtSessionModule now supports HttpOnly and Secure cookies. When configuring set 'isHttpOnly' and 'isSecure' as true.
+* JwtSessionModule now supports HttpOnly and Secure cookies. When configuring set 'isHttpOnly' and 'isSecure' as true.

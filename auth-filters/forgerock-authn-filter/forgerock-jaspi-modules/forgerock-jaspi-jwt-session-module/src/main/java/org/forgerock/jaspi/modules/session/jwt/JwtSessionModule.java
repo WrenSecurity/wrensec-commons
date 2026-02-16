@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.jaspi.modules.session.jwt;
@@ -20,8 +21,6 @@ import static org.forgerock.caf.authentication.framework.JaspiAdapters.adapt;
 import static org.forgerock.util.promise.Promises.newExceptionPromise;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
 import jakarta.security.auth.message.AuthStatus;
 import jakarta.security.auth.message.MessageInfo;
 import jakarta.security.auth.message.MessagePolicy;
@@ -31,13 +30,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
 import org.forgerock.caf.authentication.api.AsyncServerAuthModule;
 import org.forgerock.caf.authentication.api.AuthenticationException;
 import org.forgerock.caf.authentication.api.MessageInfoContext;
 import org.forgerock.caf.authentication.framework.AuthenticationFramework;
 import org.forgerock.caf.authentication.framework.JaspiAdapters;
-import org.forgerock.services.context.AttributesContext;
 import org.forgerock.http.header.SetCookieHeader;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Headers;
@@ -46,6 +45,7 @@ import org.forgerock.http.protocol.RequestCookies;
 import org.forgerock.http.protocol.Response;
 import org.forgerock.json.jose.builders.JwtBuilderFactory;
 import org.forgerock.json.jose.jwt.Jwt;
+import org.forgerock.services.context.AttributesContext;
 import org.forgerock.util.promise.Promise;
 
 /**
@@ -53,7 +53,7 @@ import org.forgerock.util.promise.Promise;
  * and sets it as a Cookie on the response. Then on subsequent requests checks for the presents of the JWT as a
  * Cookie on the request and validates the signature and decrypts it and checks the expiration time of the JWT.
  */
-public class JwtSessionModule extends AbstractJwtSessionModule<CookieWrapper> implements AsyncServerAuthModule {
+public class JwtSessionModule extends AbstractJwtSessionModule<Cookie> implements AsyncServerAuthModule {
 
     /**
      * Constructs an instance of the JwtSessionModule.
@@ -98,12 +98,12 @@ public class JwtSessionModule extends AbstractJwtSessionModule<CookieWrapper> im
     }
 
     @Override
-    CookieWrapper findJwtSessionCookie(MessageInfo messageInfo) {
+    String findJwtSessionCookie(MessageInfo messageInfo) {
         Request request = (Request) messageInfo.getRequestMessage();
         RequestCookies cookies = request.getCookies();
         if (cookies.containsKey(sessionCookieName)) {
             for (Cookie cookie : cookies.get(sessionCookieName)) {
-                return new CookieWrapper(cookie);
+                return cookie.getValue();
             }
         }
         return null;
@@ -125,27 +125,27 @@ public class JwtSessionModule extends AbstractJwtSessionModule<CookieWrapper> im
     }
 
     @Override
-    Collection<CookieWrapper> createCookies(String value, int maxAge, String path) {
-        List<CookieWrapper> cookies = new ArrayList<>();
+    Collection<Cookie> createCookies(String value, int maxAge, String path) {
+        List<Cookie> cookies = new ArrayList<>();
         for (String cookieDomain : cookieDomains) {
-            cookies.add(new CookieWrapper(new Cookie()
+            cookies.add(new Cookie()
                     .setName(sessionCookieName)
                     .setValue(value)
                     .setMaxAge(maxAge >= 0 ? maxAge : null)
                     .setPath(path)
                     .setDomain(cookieDomain)
                     .setSecure(isSecure)
-                    .setHttpOnly(isHttpOnly)));
+                    .setHttpOnly(isHttpOnly));
         }
         return cookies;
     }
 
     @Override
-    void addCookiesToResponse(Collection<CookieWrapper> cookies, MessageInfo messageInfo) {
+    void addCookiesToResponse(Collection<Cookie> cookies, MessageInfo messageInfo) {
         Response response = (Response) messageInfo.getResponseMessage();
         Headers headers = response.getHeaders();
-        for (CookieWrapper cookieWrapper : cookies) {
-            headers.put(new SetCookieHeader(Collections.singletonList(cookieWrapper.getCookie())));
+        for (Cookie cookie : cookies) {
+            headers.put(new SetCookieHeader(Collections.singletonList(cookie)));
         }
     }
 
