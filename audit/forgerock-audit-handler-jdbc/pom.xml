@@ -21,7 +21,7 @@
     <parent>
         <artifactId>forgerock-audit</artifactId>
         <groupId>org.wrensecurity.commons</groupId>
-        <version>23.0.0-M2</version>
+        <version>23.0.0-M3-SNAPSHOT</version>
     </parent>
 
     <artifactId>forgerock-audit-handler-jdbc</artifactId>

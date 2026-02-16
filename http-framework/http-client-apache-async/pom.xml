@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.wrensecurity.http</groupId>
     <artifactId>forgerock-http-framework-parent</artifactId>
-    <version>23.0.0-M2</version>
+    <version>23.0.0-M3-SNAPSHOT</version>
   </parent>
 
   <artifactId>chf-client-apache-async</artifactId>
