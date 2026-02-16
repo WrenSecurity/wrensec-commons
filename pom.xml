@@ -13,7 +13,7 @@
    information: "Portions copyright [year] [name of copyright owner]".
 
    Copyright 2015-2016 ForgeRock AS.
-   Portions Copyright 2017-2025 Wren Security.
+   Portions Copyright 2017-2026 Wren Security.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -98,7 +98,7 @@
         <jsr305.version>3.0.2</jsr305.version>
         <jxrPluginVersion>3.3.2</jxrPluginVersion>
         <mockito.version>4.4.0</mockito.version>
-        <servlet-api.version>5.0.0</servlet-api.version>
+        <servlet-api.version>6.0.0</servlet-api.version>
         <slf4j.version>2.0.17</slf4j.version>
         <swagger.version>1.6.11</swagger.version>
         <testng.version>7.8.0</testng.version>

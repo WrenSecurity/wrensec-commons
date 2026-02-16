@@ -12,9 +12,8 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2013-2016 ForgeRock AS.
- * Portions Copyright 2018 Wren Security.
+ * Portions Copyright 2018-2026 Wren Security.
  */
-
 package org.forgerock.jaspi.modules.session.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +33,14 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.callback.CallerPrincipalCallback;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -44,20 +51,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import jakarta.security.auth.message.AuthException;
-import jakarta.security.auth.message.AuthStatus;
-import jakarta.security.auth.message.MessageInfo;
-import jakarta.security.auth.message.MessagePolicy;
-import jakarta.security.auth.message.callback.CallerPrincipalCallback;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.forgerock.caf.authentication.framework.AuthenticationFramework;
 import org.forgerock.json.jose.builders.EncryptedJwtBuilder;
 import org.forgerock.json.jose.builders.JweHeaderBuilder;
@@ -766,7 +763,7 @@ public class ServletJwtSessionModuleTest {
         given(jwtClaimsSetBuilder.claims(anyMap())).willReturn(jwtClaimsSetBuilder);
         given(jwtClaimsSetBuilder.build()).willReturn(claimsSet);
         given(encryptedJwtBuilder.claims(claimsSet)).willReturn(encryptedJwtBuilder);
-        given(encryptedJwtBuilder.sign(any(HmacSigningHandler.class), eq(JwsAlgorithm.HS256)))
+        given(encryptedJwtBuilder.signedWith(any(HmacSigningHandler.class), eq(JwsAlgorithm.HS256)))
                 .willReturn(signedEncryptedJwtBuilder);
         given(signedEncryptedJwtBuilder.build()).willReturn("ENCRYPTED_JWT");
 
@@ -855,7 +852,7 @@ public class ServletJwtSessionModuleTest {
         given(jwtClaimsSetBuilder.claims(anyMap())).willReturn(jwtClaimsSetBuilder);
         given(jwtClaimsSetBuilder.build()).willReturn(claimsSet);
         given(encryptedJwtBuilder.claims(claimsSet)).willReturn(encryptedJwtBuilder);
-        given(encryptedJwtBuilder.sign(any(), eq(JwsAlgorithm.HS256)))
+        given(encryptedJwtBuilder.signedWith(any(), eq(JwsAlgorithm.HS256)))
                 .willReturn(signedEncryptedJwtBuilder);
         given(signedEncryptedJwtBuilder.build()).willReturn("ENCRYPTED_JWT");
 
@@ -983,7 +980,7 @@ public class ServletJwtSessionModuleTest {
         given(jwtClaimsSetBuilder.claims(anyMap())).willReturn(jwtClaimsSetBuilder);
         given(jwtClaimsSetBuilder.build()).willReturn(claimsSet);
         given(encryptedJwtBuilder.claims(claimsSet)).willReturn(encryptedJwtBuilder);
-        given(encryptedJwtBuilder.sign(any(), eq(JwsAlgorithm.HS256)))
+        given(encryptedJwtBuilder.signedWith(any(), eq(JwsAlgorithm.HS256)))
                 .willReturn(signedEncryptedJwtBuilder);
         given(signedEncryptedJwtBuilder.build()).willReturn("ENCRYPTED_JWT");
 
@@ -1072,7 +1069,7 @@ public class ServletJwtSessionModuleTest {
         given(jwtClaimsSetBuilder.claims(anyMap())).willReturn(jwtClaimsSetBuilder);
         given(jwtClaimsSetBuilder.build()).willReturn(claimsSet);
         given(encryptedJwtBuilder.claims(claimsSet)).willReturn(encryptedJwtBuilder);
-        given(encryptedJwtBuilder.sign(any(), eq(JwsAlgorithm.HS256)))
+        given(encryptedJwtBuilder.signedWith(any(), eq(JwsAlgorithm.HS256)))
                 .willReturn(signedEncryptedJwtBuilder);
         given(signedEncryptedJwtBuilder.build()).willReturn("ENCRYPTED_JWT");
 
@@ -1160,7 +1157,7 @@ public class ServletJwtSessionModuleTest {
         given(jwtClaimsSetBuilder.claims(anyMap())).willReturn(jwtClaimsSetBuilder);
         given(jwtClaimsSetBuilder.build()).willReturn(claimsSet);
         given(encryptedJwtBuilder.claims(claimsSet)).willReturn(encryptedJwtBuilder);
-        given(encryptedJwtBuilder.sign(any(), eq(JwsAlgorithm.HS256)))
+        given(encryptedJwtBuilder.signedWith(any(), eq(JwsAlgorithm.HS256)))
                 .willReturn(signedEncryptedJwtBuilder);
         given(signedEncryptedJwtBuilder.build()).willReturn("ENCRYPTED_JWT");
 
@@ -1300,25 +1297,25 @@ public class ServletJwtSessionModuleTest {
 
     @Test
     public void shouldCreateSessionCookieWithMaxAge() {
-        Collection<org.forgerock.caf.http.Cookie> cookies = jwtSessionModule.createCookies("foo", 7, "/");
+        Collection<Cookie> cookies = jwtSessionModule.createCookies("foo", 7, "/");
         assertEquals(cookies.size(), 1);
-        org.forgerock.caf.http.Cookie cookie = cookies.iterator().next();
+        Cookie cookie = cookies.iterator().next();
         assertEquals(cookie.getMaxAge(), 7);
     }
 
     @Test
     public void shouldCreateSessionCookieWithoutMaxAge() {
-        Collection<org.forgerock.caf.http.Cookie> cookies = jwtSessionModule.createCookies("foo", -1, "/");
+        Collection<Cookie> cookies = jwtSessionModule.createCookies("foo", -1, "/");
         assertEquals(cookies.size(), 1);
-        org.forgerock.caf.http.Cookie cookie = cookies.iterator().next();
+        Cookie cookie = cookies.iterator().next();
         assertTrue(cookie.getMaxAge() < 0);
     }
 
     @Test
     public void shouldCreateSessionExpiredCookie() {
-        Collection<org.forgerock.caf.http.Cookie> cookies = jwtSessionModule.createCookies("foo", 0, "/");
+        Collection<Cookie> cookies = jwtSessionModule.createCookies("foo", 0, "/");
         assertEquals(cookies.size(), 1);
-        org.forgerock.caf.http.Cookie cookie = cookies.iterator().next();
+        Cookie cookie = cookies.iterator().next();
         assertTrue(cookie.getMaxAge() == 0);
     }
 
