@@ -18,6 +18,7 @@ package org.forgerock.selfservice.stages.registration;
 
 import static org.forgerock.selfservice.stages.CommonStateFields.USER_FIELD;
 
+import jakarta.inject.Inject;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.Connection;
 import org.forgerock.json.resource.ConnectionFactory;
@@ -32,7 +33,6 @@ import org.forgerock.selfservice.core.util.RequirementsBuilder;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
 
-import javax.inject.Inject;
 
 /**
  * Stage is responsible for registering the user supplied data using the underlying service.

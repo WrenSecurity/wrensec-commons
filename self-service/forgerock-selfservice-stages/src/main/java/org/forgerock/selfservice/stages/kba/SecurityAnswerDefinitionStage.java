@@ -19,11 +19,16 @@ package org.forgerock.selfservice.stages.kba;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
-import static org.forgerock.selfservice.stages.CommonStateFields.USER_FIELD;
 import static org.forgerock.selfservice.core.util.RequirementsBuilder.newArray;
 import static org.forgerock.selfservice.core.util.RequirementsBuilder.newObject;
 import static org.forgerock.selfservice.core.util.RequirementsBuilder.oneOf;
+import static org.forgerock.selfservice.stages.CommonStateFields.USER_FIELD;
 
+import jakarta.inject.Inject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ConnectionFactory;
@@ -35,12 +40,6 @@ import org.forgerock.selfservice.core.annotations.SelfService;
 import org.forgerock.selfservice.core.util.Answers;
 import org.forgerock.selfservice.core.util.RequirementsBuilder;
 import org.forgerock.util.Reject;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Stage is responsible for supplying the KBA questions to the user and capturing the answers provided by the user.

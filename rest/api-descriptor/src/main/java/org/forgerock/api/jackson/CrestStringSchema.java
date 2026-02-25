@@ -12,31 +12,30 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
-
 package org.forgerock.api.jackson;
 
-import static org.forgerock.api.jackson.JacksonUtils.*;
+import static org.forgerock.api.jackson.JacksonUtils.validateEnum;
 import static org.forgerock.api.util.ValidationUtil.isEmpty;
-
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.validation.ValidationException;
-import javax.xml.bind.DatatypeConverter;
-
-import org.forgerock.api.enums.ReadPolicy;
-import org.wrensecurity.guava.common.net.InetAddresses;
-import org.wrensecurity.guava.common.net.InternetDomainName;
-import org.forgerock.json.JsonValue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.module.jsonSchema.types.StringSchema;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import javax.validation.ValidationException;
+import org.forgerock.api.enums.ReadPolicy;
 import org.forgerock.api.enums.WritePolicy;
+import org.forgerock.json.JsonValue;
+import org.wrensecurity.guava.common.net.InetAddresses;
+import org.wrensecurity.guava.common.net.InternetDomainName;
 
 /**
  * An extension to the Jackson {@code StringSchema} that includes the custom CREST JSON Schema attributes.
@@ -137,8 +136,8 @@ class CrestStringSchema extends StringSchema implements CrestReadWritePoliciesSc
         case "date-time":
             // http://tools.ietf.org/html/rfc3339#section-5.6
             try {
-                DatatypeConverter.parseDateTime(s);
-            } catch (IllegalArgumentException e) {
+                LocalDateTime.parse(s);
+            } catch (DateTimeParseException e) {
                 throw new ValidationException("Expected date-time format, but got " + s, e);
             }
             return;
@@ -147,8 +146,8 @@ class CrestStringSchema extends StringSchema implements CrestReadWritePoliciesSc
             // NOTE: supported by OpenAPI, but not defined by JSON Schema v4 spec
             // http://tools.ietf.org/html/rfc3339#section-5.6
             try {
-                DatatypeConverter.parseDate(s);
-            } catch (IllegalArgumentException e) {
+                LocalDate.parse(s);
+            } catch (DateTimeParseException e) {
                 throw new ValidationException("Expected date/full-date format, but got " + s, e);
             }
             return;

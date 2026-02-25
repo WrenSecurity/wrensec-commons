@@ -16,14 +16,13 @@
 
 package org.forgerock.audit.events.handlers;
 
-import org.forgerock.audit.AuditException;
-import org.forgerock.audit.DependencyProvider;
-import org.forgerock.audit.events.EventTopicsMetaData;
-
+import jakarta.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import javax.inject.Inject;
+import org.forgerock.audit.AuditException;
+import org.forgerock.audit.DependencyProvider;
+import org.forgerock.audit.events.EventTopicsMetaData;
 
 /**
  * AuditEventFactory capable of performing construction injection by resolving dependencies using a DependencyProvider.

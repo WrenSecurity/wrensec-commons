@@ -12,12 +12,12 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.json.jose.jws;
 
 import static java.math.BigInteger.ONE;
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigInteger;
@@ -26,9 +26,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.ECFieldFp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.Iterator;
 import java.util.List;
-
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -89,7 +89,7 @@ public class SupportedEllipticCurveTest {
         BigInteger mod = BigInteger.valueOf(2).pow(g);
         for (int i = 1; i <= s; ++i) {
             BigInteger si = z.add(BigInteger.valueOf(i)).mod(mod);
-            w.append(printHexBinary(sha1(removeSignByte(si.toByteArray(), g))));
+            w.append(HexFormat.of().formatHex(sha1(removeSignByte(si.toByteArray(), g))));
         }
 
         BigInteger r = new BigInteger(w.toString(), 16);

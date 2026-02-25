@@ -15,17 +15,17 @@
  */
 package org.forgerock.selfservice.stages.user;
 
-import static org.forgerock.selfservice.stages.CommonStateFields.EMAIL_FIELD;
-import static org.forgerock.selfservice.stages.CommonStateFields.USER_ID_FIELD;
-import static org.forgerock.selfservice.stages.CommonStateFields.USERNAME_FIELD;
 import static org.forgerock.selfservice.stages.CommonStateFields.ACCOUNTSTATUS_FIELD;
+import static org.forgerock.selfservice.stages.CommonStateFields.EMAIL_FIELD;
+import static org.forgerock.selfservice.stages.CommonStateFields.USERNAME_FIELD;
+import static org.forgerock.selfservice.stages.CommonStateFields.USER_ID_FIELD;
 
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.inject.Inject;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.BadRequestException;

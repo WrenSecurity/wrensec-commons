@@ -34,6 +34,8 @@ import static org.forgerock.json.resource.Responses.newQueryResponse;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.util.Utils.isNullOrEmpty;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -52,9 +54,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import javax.inject.Inject;
-
 import org.forgerock.audit.Audit;
 import org.forgerock.audit.events.EventTopicsMetaData;
 import org.forgerock.audit.events.handlers.AuditEventHandlerBase;
@@ -93,8 +92,6 @@ import org.supercsv.io.ICsvMapReader;
 import org.supercsv.prefs.CsvPreference;
 import org.supercsv.quote.AlwaysQuoteMode;
 import org.supercsv.util.CsvContext;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Handles AuditEvents by writing them to a CSV file.

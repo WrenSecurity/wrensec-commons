@@ -23,6 +23,8 @@ import static org.forgerock.json.resource.Responses.newActionResponse;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
 import static org.forgerock.selfservice.core.ServiceUtils.emptyJson;
 
+import jakarta.inject.Inject;
+import java.util.List;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
 import org.forgerock.json.resource.AbstractRequestHandler;
@@ -37,17 +39,13 @@ import org.forgerock.json.resource.ResourceResponse;
 import org.forgerock.selfservice.core.config.ProcessInstanceConfig;
 import org.forgerock.selfservice.core.config.StageConfig;
 import org.forgerock.selfservice.core.config.StageConfigException;
-import org.forgerock.tokenhandler.TokenHandler;
 import org.forgerock.selfservice.core.snapshot.SnapshotTokenHandlerFactory;
 import org.forgerock.services.context.Context;
+import org.forgerock.tokenhandler.TokenHandler;
 import org.forgerock.util.Reject;
 import org.forgerock.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-
-import java.util.List;
 
 /**
  * Anonymous process service progresses a chain of {@link ProgressStage}

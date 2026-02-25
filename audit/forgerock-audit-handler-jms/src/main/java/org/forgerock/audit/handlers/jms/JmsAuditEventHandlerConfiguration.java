@@ -16,15 +16,14 @@
 
 package org.forgerock.audit.handlers.jms;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-import java.util.Collections;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Session;
+import jakarta.jms.Topic;
+import java.util.Collections;
+import java.util.Map;
+import javax.naming.InitialContext;
 import org.forgerock.audit.events.handlers.EventHandlerConfiguration;
 import org.forgerock.util.Reject;
 

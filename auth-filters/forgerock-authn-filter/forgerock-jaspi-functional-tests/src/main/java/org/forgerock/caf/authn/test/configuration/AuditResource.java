@@ -16,12 +16,13 @@
 
 package org.forgerock.caf.authn.test.configuration;
 
-import static org.forgerock.json.JsonValue.*;
-import static org.forgerock.json.resource.Responses.*;
-import static org.forgerock.util.promise.Promises.*;
+import static org.forgerock.json.JsonValue.array;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.resource.Responses.newActionResponse;
+import static org.forgerock.json.resource.Responses.newResourceResponse;
+import static org.forgerock.util.promise.Promises.newResultPromise;
 
-import javax.inject.Inject;
-
+import jakarta.inject.Inject;
 import org.forgerock.caf.authn.test.runtime.TestAuditApi;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;

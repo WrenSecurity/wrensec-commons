@@ -18,19 +18,16 @@ package org.forgerock.guice.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.inject.Inject;
-
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
+import jakarta.inject.Inject;
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 public class InjectorHolderTest {
 
@@ -91,6 +88,7 @@ public class InjectorHolderTest {
 
     public static final class TestGuiceModuleLoader implements GuiceModuleLoader {
 
+        @Override
         public Set<Class<? extends Module>> getGuiceModules(Class<? extends Annotation> moduleAnnotation) {
             Set<Class<? extends Module>> modules = new HashSet<Class<? extends Module>>();
             modules.add(TestModule.class);

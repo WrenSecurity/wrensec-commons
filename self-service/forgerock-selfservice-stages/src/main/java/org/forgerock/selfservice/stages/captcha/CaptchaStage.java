@@ -19,10 +19,13 @@ import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.selfservice.core.util.RequirementsBuilder.newEmptyObject;
 import static org.forgerock.util.CloseSilentlyFunction.closeSilently;
 
+import jakarta.inject.Inject;
+import java.io.IOException;
+import java.net.URI;
 import org.forgerock.http.Client;
-import org.forgerock.http.protocol.Responses;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
+import org.forgerock.http.protocol.Responses;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.BadRequestException;
 import org.forgerock.json.resource.ResourceException;
@@ -34,10 +37,6 @@ import org.forgerock.selfservice.core.util.RequirementsBuilder;
 import org.forgerock.util.Function;
 import org.forgerock.util.Reject;
 import org.forgerock.util.promise.NeverThrowsException;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.net.URI;
 
 /**
  * Stage is responsible for captcha based security.

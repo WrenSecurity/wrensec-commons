@@ -12,17 +12,15 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
-
 package org.forgerock.json.jose.jwe.handlers.encryption;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.Key;
-
+import java.util.HexFormat;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-
 import org.forgerock.json.jose.exceptions.JweDecryptionException;
 import org.forgerock.json.jose.jwe.EncryptionMethod;
 import org.forgerock.json.jose.jwe.JweEncryption;
@@ -118,7 +116,7 @@ public class A128CBCHS256Test {
     }
 
     private byte[] hexToBytes(String hex) {
-        return DatatypeConverter.parseHexBinary(hex.replaceAll("\\s+", ""));
+        return HexFormat.of().parseHex(hex.replaceAll("\\s+", ""));
     }
 
 

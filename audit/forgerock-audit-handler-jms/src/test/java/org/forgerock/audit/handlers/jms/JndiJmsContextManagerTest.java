@@ -24,17 +24,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Topic;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Hashtable;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
 import javax.naming.spi.NamingManager;
-
 import org.assertj.core.api.ThrowableAssert;
 import org.forgerock.audit.handlers.jms.JmsAuditEventHandlerConfiguration.JndiConfiguration;
 import org.forgerock.json.resource.InternalServerErrorException;

@@ -17,9 +17,15 @@ package org.forgerock.selfservice.stages.kba;
 
 import static org.forgerock.json.JsonValue.array;
 import static org.forgerock.json.JsonValue.json;
-import static org.forgerock.selfservice.stages.CommonStateFields.USER_ID_FIELD;
 import static org.forgerock.selfservice.core.util.RequirementsBuilder.newEmptyObject;
+import static org.forgerock.selfservice.stages.CommonStateFields.USER_ID_FIELD;
 
+import jakarta.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.BadRequestException;
@@ -32,18 +38,11 @@ import org.forgerock.json.resource.ResourceException;
 import org.forgerock.json.resource.ResourceResponse;
 import org.forgerock.selfservice.core.ProcessContext;
 import org.forgerock.selfservice.core.StageResponse;
-import org.forgerock.selfservice.core.crypto.JsonCryptoException;
 import org.forgerock.selfservice.core.annotations.SelfService;
+import org.forgerock.selfservice.core.crypto.JsonCryptoException;
 import org.forgerock.selfservice.core.util.Answers;
 import org.forgerock.selfservice.core.util.RequirementsBuilder;
 import org.forgerock.util.Reject;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Stage is responsible for verifying the answers provided by the user for the KBA questions.
