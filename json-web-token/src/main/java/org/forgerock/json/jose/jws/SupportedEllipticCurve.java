@@ -12,8 +12,8 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
-
 package org.forgerock.json.jose.jws;
 
 import java.math.BigInteger;
@@ -22,8 +22,8 @@ import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
+import java.util.HexFormat;
 import java.util.Objects;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * Enumerates all supported elliptic curve parameters for ESXXX signature formats.
@@ -280,7 +280,7 @@ public enum SupportedEllipticCurve {
         }
 
         private static byte[] seed(final String hex) {
-            return DatatypeConverter.parseHexBinary(hex.replaceAll("\\s+", ""));
+            return HexFormat.of().parseHex(hex.replaceAll("\\s+", ""));
         }
     }
 }

@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.json.crypto.simple;
@@ -20,9 +21,7 @@ package org.forgerock.json.crypto.simple;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.Key;
-
-import javax.xml.bind.DatatypeConverter;
-
+import java.util.HexFormat;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -132,6 +131,6 @@ public class HKDFKeyGeneratorTest {
     }
 
     private static byte[] hexToBytes(String input) {
-        return DatatypeConverter.parseHexBinary(input);
+        return HexFormat.of().parseHex(input);
     }
 }

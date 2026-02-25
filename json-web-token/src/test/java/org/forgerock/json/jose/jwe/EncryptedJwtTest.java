@@ -276,7 +276,6 @@ public class EncryptedJwtTest {
     @DataProvider
     public Object[][] encryptionMethods() throws Exception {
         final List<Object[]> result = new ArrayList<>();
-        int i = 0;
         for (JweAlgorithm jweAlgorithm : JweAlgorithm.values()) {
             if ((jweAlgorithm == JweAlgorithm.A192KW || jweAlgorithm == JweAlgorithm.A256KW)
                 && Cipher.getMaxAllowedKeyLength("AES") < 192) {

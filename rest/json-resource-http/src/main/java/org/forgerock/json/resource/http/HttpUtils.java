@@ -14,7 +14,6 @@
  * Copyright 2012-2016 ForgeRock AS.
  * Portions copyright 2026 Wren Security
  */
-
 package org.forgerock.json.resource.http;
 
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
@@ -23,6 +22,19 @@ import static org.forgerock.json.resource.ActionRequest.ACTION_ID_CREATE;
 import static org.forgerock.util.Utils.closeSilently;
 import static org.forgerock.util.promise.Promises.newResultPromise;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.activation.DataSource;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.ContentDisposition;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.ParseException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,16 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.activation.DataSource;
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.ContentDisposition;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.ParseException;
-
 import org.forgerock.http.header.AcceptApiVersionHeader;
 import org.forgerock.http.header.ContentTypeHeader;
 import org.forgerock.http.header.MalformedHeaderException;
@@ -69,12 +71,6 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.encode.Base64url;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * HTTP utility methods and constants.
