@@ -20,9 +20,8 @@ import static org.forgerock.audit.util.ResourceExceptionsUtil.adapt;
 import static org.forgerock.audit.util.ResourceExceptionsUtil.notSupported;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
 
+import jakarta.inject.Inject;
 import java.net.InetSocketAddress;
-import javax.inject.Inject;
-
 import org.forgerock.audit.Audit;
 import org.forgerock.audit.events.EventTopicsMetaData;
 import org.forgerock.audit.events.handlers.AuditEventHandlerBase;

@@ -16,19 +16,21 @@
 
 package org.forgerock.audit.handlers.jms;
 
-import static org.forgerock.audit.util.ResourceExceptionsUtil.*;
-import static org.forgerock.json.JsonValue.*;
+import static org.forgerock.audit.util.ResourceExceptionsUtil.adapt;
+import static org.forgerock.audit.util.ResourceExceptionsUtil.notSupported;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
-
-import javax.inject.Inject;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import java.util.Collections;
-import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.inject.Inject;
+import java.util.Collections;
+import java.util.List;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 import org.forgerock.audit.Audit;
 import org.forgerock.audit.events.EventTopicsMetaData;
 import org.forgerock.audit.events.handlers.AuditEventHandlerBase;
@@ -118,6 +120,7 @@ public class JmsAuditEventHandler extends AuditEventHandlerBase {
      * @param auditEvent The event to convert to a JMS TextMessage and publish on the JMS Topic.
      * @return a promise with either a response or an exception
      */
+    @Override
     public Promise<ResourceResponse, ResourceException> publishEvent(Context context, String auditTopic,
             JsonValue auditEvent) {
         try {

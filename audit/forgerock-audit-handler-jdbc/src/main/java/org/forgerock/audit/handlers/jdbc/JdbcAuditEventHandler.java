@@ -15,16 +15,18 @@
  */
 package org.forgerock.audit.handlers.jdbc;
 
+import static org.forgerock.audit.batch.CommonAuditBatchConfiguration.POLLING_INTERVAL;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.json.resource.Responses.newQueryResponse;
 import static org.forgerock.json.resource.Responses.newResourceResponse;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 import javax.sql.DataSource;
-
 import org.forgerock.audit.Audit;
 import org.forgerock.audit.AuditException;
 import org.forgerock.audit.events.AuditEvent;
@@ -49,11 +51,6 @@ import org.forgerock.services.context.Context;
 import org.forgerock.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
-import static org.forgerock.audit.batch.CommonAuditBatchConfiguration.POLLING_INTERVAL;
 
 /**
  * Implements a {@link AuditEventHandler} to write {@link AuditEvent}s to a JDBC repository.

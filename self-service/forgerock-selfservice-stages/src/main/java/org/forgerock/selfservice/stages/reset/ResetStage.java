@@ -16,9 +16,10 @@
 
 package org.forgerock.selfservice.stages.reset;
 
-import static org.wrensecurity.guava.common.base.Strings.isNullOrEmpty;
 import static org.forgerock.selfservice.stages.CommonStateFields.USER_ID_FIELD;
+import static org.wrensecurity.guava.common.base.Strings.isNullOrEmpty;
 
+import jakarta.inject.Inject;
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.BadRequestException;
@@ -35,8 +36,6 @@ import org.forgerock.selfservice.core.annotations.SelfService;
 import org.forgerock.selfservice.core.util.RequirementsBuilder;
 import org.forgerock.services.context.Context;
 import org.forgerock.util.Reject;
-
-import javax.inject.Inject;
 
 /**
  * The reset password stage.

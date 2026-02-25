@@ -16,14 +16,17 @@
 
 package org.forgerock.selfservice.stages.email;
 
-import static org.wrensecurity.guava.common.base.Strings.isNullOrEmpty;
 import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.selfservice.core.ServiceUtils.INITIAL_TAG;
 import static org.forgerock.selfservice.stages.CommonStateFields.EMAIL_FIELD;
 import static org.forgerock.selfservice.stages.utils.LocaleUtils.getTranslationFromLocaleMap;
+import static org.wrensecurity.guava.common.base.Strings.isNullOrEmpty;
 
+import jakarta.inject.Inject;
+import java.util.Map;
+import java.util.UUID;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.BadRequestException;
@@ -31,20 +34,15 @@ import org.forgerock.json.resource.Connection;
 import org.forgerock.json.resource.ConnectionFactory;
 import org.forgerock.json.resource.Requests;
 import org.forgerock.json.resource.ResourceException;
+import org.forgerock.selfservice.core.IllegalStageTagException;
 import org.forgerock.selfservice.core.ProcessContext;
 import org.forgerock.selfservice.core.ProgressStage;
 import org.forgerock.selfservice.core.StageResponse;
-import org.forgerock.selfservice.core.IllegalStageTagException;
-import org.forgerock.selfservice.core.snapshot.SnapshotTokenCallback;
 import org.forgerock.selfservice.core.annotations.SelfService;
+import org.forgerock.selfservice.core.snapshot.SnapshotTokenCallback;
 import org.forgerock.selfservice.core.util.RequirementsBuilder;
 import org.forgerock.util.Reject;
 import org.forgerock.util.i18n.PreferredLocales;
-
-import javax.inject.Inject;
-
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Having retrieved the email address from the context or in response to the initial requirements, verifies the

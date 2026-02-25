@@ -17,23 +17,25 @@
 
 package org.forgerock.caf.authn.test.runtime;
 
-import static org.forgerock.caf.authentication.framework.AuthenticationFilter.AuthenticationModuleBuilder;
 import static org.forgerock.caf.authentication.framework.AuthenticationFilter.AuthenticationModuleBuilder.configureModule;
 import static org.forgerock.json.resource.Requests.newReadRequest;
 import static org.forgerock.json.resource.Resources.newInternalConnection;
 import static org.forgerock.json.resource.Resources.newSingleton;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Scopes;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.forgerock.caf.authentication.api.AsyncServerAuthModule;
 import org.forgerock.caf.authentication.api.AuthenticationException;
 import org.forgerock.caf.authentication.framework.AuditApi;
 import org.forgerock.caf.authentication.framework.AuthenticationFilter;
+import org.forgerock.caf.authentication.framework.AuthenticationFilter.AuthenticationModuleBuilder;
 import org.forgerock.caf.authn.test.configuration.ConfigurationResource;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ResourceException;
@@ -41,11 +43,6 @@ import org.forgerock.json.resource.ResourceResponse;
 import org.forgerock.services.context.RootContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Scopes;
 
 /**
  * Guice module for wiring the JASPI runtime.

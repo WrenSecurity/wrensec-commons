@@ -15,14 +15,15 @@
  */
 package org.forgerock.selfservice.stages.user;
 
-import static org.forgerock.json.JsonValue.*;
+import static org.forgerock.json.JsonValue.field;
+import static org.forgerock.json.JsonValue.json;
+import static org.forgerock.json.JsonValue.object;
 import static org.forgerock.selfservice.stages.CommonStateFields.EMAIL_FIELD;
 import static org.forgerock.selfservice.stages.CommonStateFields.USERNAME_FIELD;
 import static org.forgerock.selfservice.stages.utils.LocaleUtils.getTranslationFromLocaleMap;
 
+import jakarta.inject.Inject;
 import java.util.Map;
-
-import javax.inject.Inject;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.resource.ActionRequest;
 import org.forgerock.json.resource.Connection;

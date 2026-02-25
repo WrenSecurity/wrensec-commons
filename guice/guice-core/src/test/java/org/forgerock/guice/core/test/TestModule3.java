@@ -25,6 +25,7 @@ public class TestModule3 implements Module {
 
     }
 
+    @SuppressWarnings("unused")
     private TestModule3() {
 
     }
@@ -33,6 +34,7 @@ public class TestModule3 implements Module {
 
     }
 
+    @Override
     public void configure(Binder binder) {
     }
 }
