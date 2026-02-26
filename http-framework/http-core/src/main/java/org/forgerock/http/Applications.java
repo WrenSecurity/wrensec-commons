@@ -20,7 +20,7 @@ import org.forgerock.http.io.Buffer;
 import org.forgerock.util.Factory;
 import org.forgerock.util.Reject;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * Utility methods to work with CHF Applications.
@@ -41,7 +41,7 @@ public final class Applications {
      * @return The {@link HttpApplication}.
      */
     public static DescribedHttpApplication describedHttpApplication(final Handler handler,
-            final Factory<Buffer> storage, final ApiProducer<Swagger> apiProducer) {
+            final Factory<Buffer> storage, final ApiProducer<OpenAPI> apiProducer) {
         Reject.ifNull(handler, apiProducer);
         return new DescribedHttpApplication() {
 
@@ -61,7 +61,7 @@ public final class Applications {
             }
 
             @Override
-            public ApiProducer<Swagger> getApiProducer() {
+            public ApiProducer<OpenAPI> getApiProducer() {
                 return apiProducer;
             }
         };

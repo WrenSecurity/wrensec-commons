@@ -13,13 +13,14 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.transform;
 
 /**
  * Signals that an error occurred while transforming an API Description to another format.
  */
 public class TransformerException extends IllegalStateException {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * Creates a {@link TransformerException} with a detailed error message.
@@ -39,4 +40,5 @@ public class TransformerException extends IllegalStateException {
     public TransformerException(final String message, final Throwable cause) {
         super(message, cause);
     }
+
 }

@@ -12,7 +12,6 @@
     <servlet>
         <servlet-name>AdminHttpApplicationServlet</servlet-name>
         <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
-        <async-supported>true</async-supported>
         <init-param>
             <param-name>application-loader</param-name>
             <param-value>servlet_context</param-value>
@@ -21,12 +20,12 @@
             <param-name>application-key</param-name>
             <param-value>adminApp</param-value>
         </init-param>
+        <async-supported>true</async-supported>
     </servlet>
 
     <servlet>
         <servlet-name>StandardHttpApplicationServlet</servlet-name>
         <servlet-class>org.forgerock.http.servlet.HttpFrameworkServlet</servlet-class>
-        <async-supported>true</async-supported>
         <init-param>
             <param-name>application-loader</param-name>
             <param-value>servlet_context</param-value>
@@ -35,6 +34,7 @@
             <param-name>application-key</param-name>
             <param-value>app</param-value>
         </init-param>
+        <async-supported>true</async-supported>
     </servlet>
 
     <servlet-mapping>

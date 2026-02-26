@@ -12,7 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
- * Portions Copyright 2018 Wren Security.
+ * Portions Copyright 2018-2026 Wren Security.
  */
 package org.forgerock.api.transform;
 
@@ -33,6 +33,12 @@ import static org.forgerock.json.JsonValue.field;
 import static org.forgerock.json.JsonValue.json;
 import static org.forgerock.json.JsonValue.object;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -40,7 +46,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.iterable.Extractor;
 import org.forgerock.api.ApiTestUtil;
@@ -63,23 +68,6 @@ import org.forgerock.util.i18n.PreferredLocales;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-
-import io.swagger.models.ArrayModel;
-import io.swagger.models.ComposedModel;
-import io.swagger.models.Info;
-import io.swagger.models.Model;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.Operation;
-import io.swagger.models.RefModel;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.HeaderParameter;
-import io.swagger.models.parameters.Parameter;
-import io.swagger.models.parameters.SerializableParameter;
-import io.swagger.models.properties.Property;
-import io.swagger.models.refs.RefType;
-
 @SuppressWarnings("javadoc")
 public class OpenApiTransformerTest {
 
@@ -88,12 +76,12 @@ public class OpenApiTransformerTest {
     @Test
     public void testUserAndDevicesExample() throws Exception {
         final ApiDescription apiDescription = ApiTestUtil.createUserAndDeviceExampleApiDescription();
-        final Swagger swagger = OpenApiTransformer.execute(apiDescription);
+        final OpenAPI openApi = OpenApiTransformer.execute(apiDescription);
 
-        assertThat(swagger.getTags()).hasSize(2);
-        assertTag(swagger, 0, "User Service v1.0");
-        assertTag(swagger, 1, "User-Device Service v1.0");
-        assertThat(swagger.getPaths()).containsOnlyKeys(
+        assertThat(openApi.getTags()).hasSize(2);
+        assertTag(openApi, 0, "User Service v1.0");
+        assertTag(openApi, 1, "User-Device Service v1.0");
+        assertThat(openApi.getPaths()).containsOnlyKeys(
                 "/admins#1.0_create_post",
                 "/admins#1.0_query_filter",
                 "/admins/{userId}#1.0_create_put",
@@ -131,11 +119,11 @@ public class OpenApiTransformerTest {
     @Test
     public void testTransformWithUnversionedPaths() throws Exception {
         final ApiDescription apiDescription = ApiTestUtil.createApiDescription(false);
-        final Swagger swagger = OpenApiTransformer.execute(apiDescription);
+        final OpenAPI openApi = OpenApiTransformer.execute(apiDescription);
 
-        assertThat(swagger.getTags()).hasSize(1);
-        assertTag(swagger, 0, "Resource title");
-        assertThat(swagger.getPaths()).containsOnlyKeys(
+        assertThat(openApi.getTags()).hasSize(1);
+        assertTag(openApi, 0, "Resource title");
+        assertThat(openApi.getPaths()).containsOnlyKeys(
                 "/testPath",
                 "/testPath#_action_action1",
                 "/testPath#_query_expression",
@@ -144,51 +132,58 @@ public class OpenApiTransformerTest {
                 "/testPath#_query_id_id2");
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void testTransformWithVersionedPaths() throws Exception {
         final ApiDescription apiDescription = ApiTestUtil.createApiDescription(true);
-        final Swagger swagger = OpenApiTransformer.execute(apiDescription);
+        final OpenAPI openApi = OpenApiTransformer.execute(apiDescription);
 
-        // decorate Swagger object with application-specific features like auth headers, after this class completes
-        final HeaderParameter usernameHeader = new HeaderParameter();
-        usernameHeader.setName("X-OpenAM-Username");
-        usernameHeader.setDefault("openam-admin");
-        usernameHeader.setType("string");
-        usernameHeader.required(true);
-        OpenApiHelper.addHeaderToAllOperations(usernameHeader, swagger);
+        // decorate OpenAPI object with application-specific features like auth headers, after this class completes
+        final Parameter usernameHeader = new Parameter()
+                .in("header")
+                .name("X-OpenAM-Username")
+                .schema(new io.swagger.v3.oas.models.media.Schema<String>()
+                        .type("string")._default("openam-admin"))
+                .required(true);
+        OpenApiHelper.addHeaderToAllOperations(usernameHeader, openApi);
 
-        final HeaderParameter passwordHeader = new HeaderParameter();
-        passwordHeader.setName("X-OpenAM-Password");
-        passwordHeader.setDefault("openam-admin");
-        passwordHeader.setType("string");
-        passwordHeader.required(true);
-        OpenApiHelper.addHeaderToAllOperations(passwordHeader, swagger);
+        final Parameter passwordHeader = new Parameter()
+                .in("header")
+                .name("X-OpenAM-Password")
+                .schema(new io.swagger.v3.oas.models.media.Schema<String>()
+                        .type("string")._default("openam-admin"))
+                .required(true);
+        OpenApiHelper.addHeaderToAllOperations(passwordHeader, openApi);
 
         OpenApiHelper.visitAllOperations(
                 new OpenApiHelper.OperationVisitor() {
                     @Override
                     public void visit(final Operation operation) {
                         // add header "Accept-API-Version: resource=XXX, protocol=1.0"
-                        final String version = (String) operation.getVendorExtensions().get("x-resourceVersion");
+                        final String version = (String) operation.getExtensions().get("x-resourceVersion");
                         assertThat(version).isIn("1.0", "2.0");
                         assertThat(operation.getParameters()).areAtLeastOne(new Condition<Parameter>() {
                             @Override
                             public boolean matches(Parameter parameter) {
-                                if (!(parameter instanceof HeaderParameter)) {
+                                if (!"header".equals(parameter.getIn())) {
                                     return false;
                                 }
-                                assertThat(((HeaderParameter) parameter).getEnum()).containsOnly("resource=" + version);
+                                if (parameter.getSchema() == null || parameter.getSchema().getEnum() == null) {
+                                    return false;
+                                }
+                                assertThat(parameter.getSchema().getEnum())
+                                        .containsOnly("resource=" + version);
                                 return true;
                             }
                         });
                     }
-                }, swagger);
+                }, openApi);
 
-        assertThat(swagger.getTags()).hasSize(2);
-        assertTag(swagger, 0, "Resource title v1.0");
-        assertTag(swagger, 1, "Resource title v2.0");
+        assertThat(openApi.getTags()).hasSize(2);
+        assertTag(openApi, 0, "Resource title v1.0");
+        assertTag(openApi, 1, "Resource title v2.0");
 
-        assertThat(swagger.getPaths()).containsOnlyKeys(
+        assertThat(openApi.getPaths()).containsOnlyKeys(
                 "/testPath#1.0_create_post",
                 "/testPath#1.0_read",
                 "/testPath#1.0_update",
@@ -212,9 +207,9 @@ public class OpenApiTransformerTest {
                 "/testPath#2.0_query_id_id2");
     }
 
-    private void assertTag(Swagger swagger, int tagNumber, String expected) {
-        assertThat(swagger.getTags().get(tagNumber)).isInstanceOf(LocalizableTag.class);
-        LocalizableTag tag = (LocalizableTag) swagger.getTags().get(tagNumber);
+    private void assertTag(OpenAPI openApi, int tagNumber, String expected) {
+        assertThat(openApi.getTags().get(tagNumber)).isInstanceOf(LocalizableTag.class);
+        LocalizableTag tag = (LocalizableTag) openApi.getTags().get(tagNumber);
         assertThat(tag.getLocalizableName().toTranslatedString(PREFERRED_LOCALES)).isEqualTo(expected);
     }
 
@@ -249,6 +244,7 @@ public class OpenApiTransformerTest {
                 .version("2.0"));
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void testBuildDefinitions() {
         final Definitions definitions = Definitions.definitions()
@@ -265,46 +261,46 @@ public class OpenApiTransformerTest {
 
         transformer.buildDefinitions();
 
-        assertThat(transformer.swagger.getDefinitions()).containsEntry("myDef",
-                new LocalizableModelImpl().type("object"));
+        assertThat(transformer.openApi.getComponents().getSchemas()).containsEntry("myDef",
+                new LocalizableSchema().type("object"));
     }
 
-    @DataProvider(name = "buildModelData")
-    public Object[][] buildModelData() {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @DataProvider(name = "buildSchemaData")
+    public Object[][] buildSchemaData() {
         return new Object[][]{
                 {null, null, NullPointerException.class},
                 {json(null), null, TransformerException.class},
                 {json(object(field("type", "not_a_json_schema_type"))), null, TransformerException.class},
-                {json(object(field("type", "object"))), new LocalizableModelImpl().type("object"), null},
+                {json(object(field("type", "object"))), new LocalizableSchema().type("object"), null},
                 {json(object(
                         field("type", "object"),
                         field("properties", object(field("name", object(field("type", "string"))))),
                         field("required", array("name")),
                         field("title", "My Title"),
                         field("description", "My Description"))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final Map<String, Property> properties = new HashMap<>();
-                                properties.put("name", new LocalizableStringProperty());
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final Map<String, io.swagger.v3.oas.models.media.Schema> properties = new HashMap<>();
+                                properties.put("name", new LocalizableSchema().type("string"));
 
-                                final ModelImpl o = new LocalizableModelImpl();
+                                final LocalizableSchema o = new LocalizableSchema();
                                 o.type("object");
                                 o.setProperties(properties);
-                                o.addRequired("name");
+                                o.setRequired(asList("name"));
                                 o.setTitle("My Title");
                                 o.setDescription("My Description");
                                 return o;
                             }
                         }.get(), null},
                 {json(object(field("type", "array"))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final ArrayModel o = new LocalizableArrayModel();
-                                final LocalizableObjectProperty itemsProperty = new LocalizableObjectProperty();
-                                itemsProperty.setType("any");
-                                o.setItems(itemsProperty);
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("array");
+                                o.setItems(new LocalizableSchema().type("any"));
                                 return o;
                             }
                         }.get(), null},
@@ -313,45 +309,46 @@ public class OpenApiTransformerTest {
                         field("items", object(field("type", "string"))),
                         field("title", "My Title"),
                         field("description", "My Description"))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final ArrayModel o = new LocalizableArrayModel();
-                                o.setItems(new LocalizableStringProperty());
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("array");
+                                o.setItems(new LocalizableSchema().type("string"));
                                 o.setTitle("My Title");
                                 o.setDescription("My Description");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "boolean"))), new LocalizableModelImpl().type("boolean"), null},
-                {json(object(field("type", "integer"))), new LocalizableModelImpl().type("integer"), null},
-                {json(object(field("type", "number"))), new LocalizableModelImpl().type("number"), null},
-                {json(object(field("type", "null"))), new ModelImpl().type("null"), null},
-                {json(object(field("type", "any"))), new ModelImpl().type("any"), null},
+                {json(object(field("type", "boolean"))), new LocalizableSchema().type("boolean"), null},
+                {json(object(field("type", "integer"))), new LocalizableSchema().type("integer"), null},
+                {json(object(field("type", "number"))), new LocalizableSchema().type("number"), null},
+                {json(object(field("type", "null"))), new LocalizableSchema().type("null"), null},
+                {json(object(field("type", "any"))), new LocalizableSchema().type("any"), null},
                 // array of non-"null" types defaults to "any"
-                {json(object(field("type", array("string", "object")))), new ModelImpl().type("any"), null},
+                {json(object(field("type", array("string", "object")))), new LocalizableSchema().type("any"), null},
                 // array of two types has "null" type removed, and single remaining type will be used
-                {json(object(field("type", array("string", "null")))), new LocalizableModelImpl().type("string"), null},
-                {json(object(field("type", "string"))), new LocalizableModelImpl().type("string"), null},
+                {json(object(field("type", array("string", "null")))), new LocalizableSchema().type("string"), null},
+                {json(object(field("type", "string"))), new LocalizableSchema().type("string"), null},
                 {json(object(
                         field("type", "string"),
                         field("default", "my_default"))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final ModelImpl o = new LocalizableModelImpl();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
                                 o.type("string");
-                                o.setDefaultValue("my_default");
+                                o.setDefault("my_default");
                                 return o;
                             }
                         }.get(), null},
                 {json(object(
                         field("type", "string"),
                         field("format", "full-date"))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final ModelImpl o = new LocalizableModelImpl();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
                                 o.type("string");
                                 o.setFormat("date");
                                 return o;
@@ -361,24 +358,25 @@ public class OpenApiTransformerTest {
                         field("type", "string"),
                         field("enum", array("enum_1", "enum_2")),
                         field("options", object(field("enum_titles", array("enum_1_title", "enum_2_title")))))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final ModelImpl o = new LocalizableModelImpl();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
                                 o.type("string");
                                 o.setEnum(Arrays.asList("enum_1", "enum_2"));
-                                o.setVendorExtension("x-enum_titles", Arrays.asList("enum_1_title", "enum_2_title"));
+                                o.addExtension("x-enum_titles", Arrays.asList("enum_1_title", "enum_2_title"));
                                 return o;
                             }
                         }.get(), null},
                 {json(object(
                         field("type", "object"),
                         field("additionalProperties", object(field("type", "string"))))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final ModelImpl o = new LocalizableModelImpl();
-                                o.setAdditionalProperties(new LocalizableStringProperty());
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("object");
+                                o.setAdditionalProperties(new LocalizableSchema().type("string"));
                                 return o;
                             }
                         }.get(), null},
@@ -388,18 +386,19 @@ public class OpenApiTransformerTest {
                         field("allOf", array(
                             object(field("$ref", "#/definitions/someDefinition")),
                             object(field("type", "object")))))),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
-                                final RefModel m1 = new LocalizableRefModel();
-                                m1.setReference("#/definitions/someDefinition");
-                                final ModelImpl m2 = new LocalizableModelImpl();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema m1 = new LocalizableSchema();
+                                m1.set$ref("#/definitions/someDefinition");
+
+                                final LocalizableSchema m2 = new LocalizableSchema();
                                 m2.type("object");
 
-                                final ComposedModel o = new LocalizableComposedModel();
+                                final LocalizableSchema o = new LocalizableSchema();
                                 o.setTitle("This is a cool title");
                                 o.setDescription("This is a cool description");
-                                o.setAllOf(asList(m1, m2));
+                                o.allOf(asList(m1, m2));
                                 return o;
                             }
                         }.get(), null},
@@ -414,25 +413,29 @@ public class OpenApiTransformerTest {
                         field("allOf", array()))),
                  null, TransformerException.class},
                 {jsonValueForSchema(PojoOuter.class),
-                        new Supplier<Model>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Model get() {
+                            public io.swagger.v3.oas.models.media.Schema get() {
                                 // this one has a 'title' because it is the first encounter of PojoInner class
-                                final LocalizableRefProperty pojoProp1 = new LocalizableRefProperty(
-                                        "urn:jsonschema:org:forgerock:api:transform:PojoInner");
+                                final LocalizableSchema pojoProp1 = new LocalizableSchema();
+                                pojoProp1.set$ref("#/components/schemas/"
+                                        + "urn:jsonschema:org:forgerock:api:transform:PojoInner");
                                 pojoProp1.description(PojoOuter.DESCRIPTION_1);
                                 pojoProp1.title(PojoInner.TITLE);
 
                                 // there is no 'title', because this second encounter was always a JSON Reference
-                                final LocalizableRefProperty pojoProp2 = new LocalizableRefProperty(
-                                        "urn:jsonschema:org:forgerock:api:transform:PojoInner");
+                                final LocalizableSchema pojoProp2 = new LocalizableSchema();
+                                pojoProp2.set$ref("#/components/schemas/"
+                                        + "urn:jsonschema:org:forgerock:api:transform:PojoInner");
                                 pojoProp2.description(PojoOuter.DESCRIPTION_2);
 
-                                final LocalizableModelImpl model = new LocalizableModelImpl();
+                                final LocalizableSchema model = new LocalizableSchema();
                                 model.type("object");
                                 model.title(PojoOuter.TITLE);
-                                model.addProperty("pojoProp1", pojoProp1);
-                                model.addProperty("pojoProp2", pojoProp2);
+                                final Map<String, io.swagger.v3.oas.models.media.Schema> properties = new HashMap<>();
+                                properties.put("pojoProp1", pojoProp1);
+                                properties.put("pojoProp2", pojoProp2);
+                                model.setProperties(properties);
                                 return model;
                             }
                         }.get(), null
@@ -440,26 +443,27 @@ public class OpenApiTransformerTest {
         };
     }
 
-    @Test(dataProvider = "buildModelData")
-    public void testBuildModel(final JsonValue schema, final Model expectedReturnValue,
+    @SuppressWarnings("rawtypes")
+    @Test(dataProvider = "buildSchemaData")
+    public void testBuildSchema(final JsonValue schema, final io.swagger.v3.oas.models.media.Schema expectedReturnValue,
             final Class<? extends Throwable> expectedException) {
         final OpenApiTransformer transformer = new OpenApiTransformer();
 
         if (expectedException != null) {
             assertThatExceptionOfType(expectedException).isThrownBy(() -> {
-                transformer.buildModel(schema);
+                transformer.buildSchema(schema);
             });
         } else {
-            final Model actualReturnValue = transformer.buildModel(schema);
+            final io.swagger.v3.oas.models.media.Schema actualReturnValue = transformer.buildSchema(schema);
 
-            // Compare the two models as JSON to avoid equality issues with "originalRef" values
-            // being different between the two instances after Swagger 1.5.21.
+            // Compare the two schemas as JSON to avoid equality issues
             assertEqualAsJson(expectedReturnValue, actualReturnValue);
         }
     }
 
-    @DataProvider(name = "buildPropertyData")
-    public Object[][] buildPropertyData() {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @DataProvider(name = "buildSchemaFromJsonData")
+    public Object[][] buildSchemaFromJsonData() {
         return new Object[][]{
                 {null, null, null},
                 {json(null), null, null},
@@ -467,54 +471,56 @@ public class OpenApiTransformerTest {
                 {json(object(field("type", "null"))), null, null},
                 {json(object(
                         field("type", "any"))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableObjectProperty o = new LocalizableObjectProperty();
-                                o.setType("any");
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("any");
                                 return o;
                             }
                         }.get(), null},
                 // array of non-"null" types defaults to "any"
                 {json(object(
                         field("type", array("string", "object")))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableObjectProperty o = new LocalizableObjectProperty();
-                                o.setType("any");
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("any");
                                 return o;
                             }
                         }.get(), null},
                 // array of two types has "null" type removed, and single remaining type will be used
-                {json(object(field("type", array("object", "null")))), new LocalizableObjectProperty(), null},
-                {json(object(field("type", "object"))), new LocalizableObjectProperty(), null},
+                {json(object(field("type", array("object", "null")))),
+                        new LocalizableSchema().type("object"), null},
+                {json(object(field("type", "object"))),
+                        new LocalizableSchema().type("object"), null},
                 {json(object(
                         field("type", "object"),
                         field("properties", object(field("name", object(field("type", "string"))))),
                         field("required", array("name")),
                         field("default", object(field("name", "myName"))))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final Map<String, Property> properties = new HashMap<>();
-                                properties.put("name", new LocalizableStringProperty());
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final Map<String, io.swagger.v3.oas.models.media.Schema> properties = new HashMap<>();
+                                properties.put("name", new LocalizableSchema().type("string"));
 
-                                final LocalizableObjectProperty o = new LocalizableObjectProperty();
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("object");
                                 o.setProperties(properties);
-                                o.setRequiredProperties(Arrays.asList("name"));
+                                o.setRequired(Arrays.asList("name"));
                                 o.setDefault(object(field("name", "myName")));
                                 return o;
                             }
                         }.get(), null},
                 {json(object(field("type", "array"))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableArrayProperty o = new LocalizableArrayProperty();
-                                final LocalizableObjectProperty itemsProperty = new LocalizableObjectProperty();
-                                itemsProperty.setType("any");
-                                o.setItems(itemsProperty);
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("array");
+                                o.setItems(new LocalizableSchema().type("any"));
                                 return o;
                             }
                         }.get(), null},
@@ -526,11 +532,12 @@ public class OpenApiTransformerTest {
                         field("maxItems", 10),
                         field("uniqueItems", true),
                         field("default", array("myValue")))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableArrayProperty o = new LocalizableArrayProperty();
-                                o.setItems(new LocalizableStringProperty());
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("array");
+                                o.setItems(new LocalizableSchema().type("string"));
                                 o.setMinItems(1);
                                 o.setMaxItems(10);
                                 o.setUniqueItems(true);
@@ -538,23 +545,42 @@ public class OpenApiTransformerTest {
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "boolean"))), new LocalizableBooleanProperty(), null},
+                {json(object(field("type", "boolean"))),
+                        new LocalizableSchema().type("boolean"), null},
                 {json(object(
                         field("type", "boolean"),
                         field("default", true))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableBooleanProperty o = new LocalizableBooleanProperty();
-                                o.setDefault(true);
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("boolean");
+                                o.setDefault("true");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "integer"))), new LocalizableIntegerProperty(), null},
+                {json(object(field("type", "integer"))),
+                        new LocalizableSchema().type("integer"), null},
                 {json(object(field("type", "integer"), field("format", "int32"))),
-                    new LocalizableIntegerProperty(), null},
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("integer");
+                                o.setFormat("int32");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(field("type", "integer"), field("format", "int64"))),
-                    new LocalizableLongProperty(), null},
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("integer");
+                                o.setFormat("int64");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(
                         field("type", "integer"),
                         field("format", "int64"),
@@ -564,28 +590,63 @@ public class OpenApiTransformerTest {
                         field("exclusiveMaximum", true),
                         field("readOnly", true),
                         field("default", 1))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableLongProperty o = new LocalizableLongProperty();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("integer");
+                                o.setFormat("int64");
                                 o.setMinimum(BigDecimal.valueOf(1.0d));
                                 o.setMaximum(BigDecimal.valueOf(2.0d));
                                 o.setExclusiveMinimum(true);
                                 o.setExclusiveMaximum(true);
                                 o.setReadOnly(true);
-                                o.setDefault(Long.valueOf(1));
+                                o.setDefault("1");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "number"))), new LocalizableDoubleProperty(), null},
+                {json(object(field("type", "number"))),
+                        new LocalizableSchema().type("number"), null},
                 {json(object(field("type", "number"), field("format", "int32"))),
-                    new LocalizableIntegerProperty(), null},
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("number");
+                                o.setFormat("int32");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(field("type", "number"), field("format", "int64"))),
-                    new LocalizableLongProperty(), null},
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("number");
+                                o.setFormat("int64");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(field("type", "number"), field("format", "float"))),
-                    new LocalizableFloatProperty(), null},
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("number");
+                                o.setFormat("float");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(field("type", "number"), field("format", "double"))),
-                    new LocalizableDoubleProperty(), null},
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("number");
+                                o.setFormat("double");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(
                         field("type", "number"),
                         field("format", "double"),
@@ -594,80 +655,138 @@ public class OpenApiTransformerTest {
                         field("exclusiveMinimum", true),
                         field("exclusiveMaximum", true),
                         field("default", 1.1))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableDoubleProperty o = new LocalizableDoubleProperty();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("number");
+                                o.setFormat("double");
                                 o.setMinimum(BigDecimal.valueOf(1.0d));
                                 o.setMaximum(BigDecimal.valueOf(2.0d));
                                 o.setExclusiveMinimum(true);
                                 o.setExclusiveMaximum(true);
-                                o.setDefault(1.1);
+                                o.setDefault("1.1");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "string"))), new LocalizableStringProperty(), null},
-                {json(object(field("type", "string"), field("format", "byte"))), new LocalizableByteArrayProperty(),
-                    null},
+                {json(object(field("type", "string"))),
+                        new LocalizableSchema().type("string"), null},
+                {json(object(field("type", "string"), field("format", "byte"))),
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("byte");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(
                         field("type", "string"),
                         field("format", "byte"),
                         field("default", "AA=="))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableByteArrayProperty o = new LocalizableByteArrayProperty();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("byte");
                                 o.setDefault("AA==");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "string"), field("format", "binary"))), new LocalizableBinaryProperty(),
-                    null},
+                {json(object(field("type", "string"), field("format", "binary"))),
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("binary");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(
                         field("type", "string"),
                         field("format", "binary"),
                         field("default", "Rm9yZ2VSb2Nr"))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableBinaryProperty o = new LocalizableBinaryProperty();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("binary");
                                 o.setDefault("Rm9yZ2VSb2Nr");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "string"), field("format", "date"))), new LocalizableDateProperty(),
-                    null},
+                {json(object(field("type", "string"), field("format", "date"))),
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("date");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(
                         field("type", "string"),
                         field("format", "full-date"),
                         field("default", "2010-11-17"))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableDateProperty o = new LocalizableDateProperty();
-                                o.setFormat("full-date");
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("date");
                                 o.setDefault("2010-11-17");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "string"), field("format", "date-time"))), new LocalizableDateTimeProperty(),
-                    null},
+                {json(object(field("type", "string"), field("format", "date-time"))),
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("date-time");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(
                         field("type", "string"),
                         field("format", "date-time"),
                         field("default", "2010-11-17T00:00:00Z"))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableDateTimeProperty o = new LocalizableDateTimeProperty();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("date-time");
                                 o.setDefault("2010-11-17T00:00:00Z");
                                 return o;
                             }
                         }.get(), null},
-                {json(object(field("type", "string"), field("format", "password"))), new LocalizablePasswordProperty(),
-                    null},
-                {json(object(field("type", "string"), field("format", "uuid"))), new LocalizableUUIDProperty(),
-                    null},
+                {json(object(field("type", "string"), field("format", "password"))),
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("password");
+                                return o;
+                            }
+                        }.get(), null},
+                {json(object(field("type", "string"), field("format", "uuid"))),
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
+                                o.setFormat("uuid");
+                                return o;
+                            }
+                        }.get(), null},
                 {json(object(
                         field("type", "string"),
                         field("format", "an_unsupported_format"),
@@ -683,10 +802,11 @@ public class OpenApiTransformerTest {
                         field("writePolicy", WritePolicy.WRITABLE.name()),
                         field("errorOnWritePolicyFailure", false),
                         field("propertyOrder", 100))),
-                        new Supplier<Property>() {
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
-                            public Property get() {
-                                final LocalizableStringProperty o = new LocalizableStringProperty();
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                final LocalizableSchema o = new LocalizableSchema();
+                                o.type("string");
                                 o.setFormat("an_unsupported_format");
                                 o.setMinLength(1);
                                 o.setMaxLength(10);
@@ -694,25 +814,26 @@ public class OpenApiTransformerTest {
                                 o.setDefault("abc");
                                 o.setTitle("My Title");
                                 o.setDescription("My Description");
-                                o.setReadOnly(false);
-                                o.setVendorExtension("x-readPolicy", ReadPolicy.USER.name());
-                                o.setVendorExtension("x-returnOnDemand", false);
-                                o.setVendorExtension("x-writePolicy", WritePolicy.WRITABLE.name());
-                                o.setVendorExtension("x-errorOnWritePolicyFailure", false);
-                                o.setVendorExtension("x-propertyOrder", 100);
+                                o.addExtension("x-readPolicy", ReadPolicy.USER.name());
+                                o.addExtension("x-returnOnDemand", false);
+                                o.addExtension("x-writePolicy", WritePolicy.WRITABLE.name());
+                                o.addExtension("x-errorOnWritePolicyFailure", false);
+                                o.addExtension("x-propertyOrder", 100);
                                 return o;
                             }
                         }.get(), null},
         };
     }
 
-    @Test(dataProvider = "buildPropertyData")
-    public void testBuildProperty(final JsonValue schema, final Property expectedReturnValue,
+    @SuppressWarnings("rawtypes")
+    @Test(dataProvider = "buildSchemaFromJsonData")
+    public void testBuildSchemaFromJson(final JsonValue schema,
+            final io.swagger.v3.oas.models.media.Schema expectedReturnValue,
             final Class<? extends Throwable> expectedException) {
         final OpenApiTransformer transformer = new OpenApiTransformer();
-        final Property actualReturnValue;
+        final io.swagger.v3.oas.models.media.Schema actualReturnValue;
         try {
-            actualReturnValue = transformer.buildProperty(schema);
+            actualReturnValue = transformer.buildSchemaFromJson(schema);
         } catch (final Exception e) {
             if (expectedException != null) {
                 assertThat(e).isInstanceOf(expectedException);
@@ -727,8 +848,9 @@ public class OpenApiTransformerTest {
         assertThat(actualReturnValue).isEqualTo(expectedReturnValue);
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
-    public void testBuildProperties() {
+    public void testBuildSchemaProperties() {
         // build schema with properties out-of-order (given propertyOrder field)
         final JsonValue schema = json(object(
                 field("type", "object"),
@@ -746,10 +868,11 @@ public class OpenApiTransformerTest {
                 ))));
 
         final OpenApiTransformer transformer = new OpenApiTransformer();
-        final Map<String, Property> modelProperties = transformer.buildProperties(schema);
+        final Map<String, io.swagger.v3.oas.models.media.Schema> schemaProperties =
+                transformer.buildSchemaProperties(schema);
 
         // check that properties are now in correct order
-        final Iterator<String> iterator = modelProperties.keySet().iterator();
+        final Iterator<String> iterator = schemaProperties.keySet().iterator();
         assertThat(iterator.next()).isEqualTo("fieldOrder1");
         assertThat(iterator.next()).isEqualTo("fieldOrder100");
         assertThat(iterator.next()).isEqualTo("fieldOrderNone");
@@ -760,7 +883,7 @@ public class OpenApiTransformerTest {
     public void testGetDefinitionsReference() {
         final OpenApiTransformer transformer = new OpenApiTransformer();
         final String reference = transformer.getDefinitionsReference(
-                reference().value(RefType.DEFINITION.getInternalPrefix() + "myDef").build());
+                reference().value("#/definitions/myDef").build());
         assertThat(reference).isEqualTo("myDef");
         assertThat(transformer.getDefinitionsReference((Reference) null)).isNull();
     }
@@ -778,6 +901,7 @@ public class OpenApiTransformerTest {
         // @Checkstyle:on
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test(dataProvider = "countPolicies")
     public void testTotalPagedResultPolicyIsProperlyFilled(CountPolicy[] policies, String[] expected) throws Exception {
         Resource resource = resource()
@@ -791,14 +915,14 @@ public class OpenApiTransformerTest {
                 .version("1.0")
                 .paths(paths().put("/test", versionedPath().put("1.0", resource).build()).build())
                 .build();
-        Swagger swagger = OpenApiTransformer.execute(new LocalizableString("Test"), "localhost:8080",
+        OpenAPI openApi = OpenApiTransformer.execute(new LocalizableString("Test"), "localhost:8080",
                 "/", false, apiDescription);
 
-        List<Parameter> parameters = swagger.getPath("/test#1.0_query_id_test").getGet().getParameters();
+        List<Parameter> parameters = openApi.getPaths().get("/test#1.0_query_id_test").getGet().getParameters();
         assertThat(parameters)
                 .filteredOn(totalPagedResultsPolicy())
                 .hasSize(1)
-                .hasOnlyElementsOfType(SerializableParameter.class)
+                .hasOnlyElementsOfType(Parameter.class)
                 .extracting(enumValues())
                 .has(countPolicies(expected), atIndex(0));
     }
@@ -832,14 +956,17 @@ public class OpenApiTransformerTest {
         assertThat(apiErrorWithCauseSchema.get(causePointer)).isNotNull();
     }
 
-    private static void assertEqualAsJson(final Model expected, final Model actual) {
+    @SuppressWarnings("rawtypes")
+    private static void assertEqualAsJson(final io.swagger.v3.oas.models.media.Schema expected,
+            final io.swagger.v3.oas.models.media.Schema actual) {
         final String    expectedJson    = objectToJsonString(expected),
                         actualJson      = objectToJsonString(actual);
 
         assertThat(actualJson).isEqualTo(expectedJson);
     }
 
-    private static String objectToJsonString(final Model object) {
+    @SuppressWarnings("rawtypes")
+    private static String objectToJsonString(final io.swagger.v3.oas.models.media.Schema object) {
         String json = null;
 
         try {
@@ -870,11 +997,12 @@ public class OpenApiTransformerTest {
         };
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Extractor<Parameter, List<String>> enumValues() {
         return new Extractor<Parameter, List<String>>() {
             @Override
             public List<String> extract(final Parameter input) {
-                return ((SerializableParameter) input).getEnum();
+                return input.getSchema().getEnum();
             }
         };
     }

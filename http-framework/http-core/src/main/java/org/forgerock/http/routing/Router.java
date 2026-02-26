@@ -37,7 +37,7 @@ import org.forgerock.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * A router which routes requests based on route matchers. Each route is
@@ -65,7 +65,7 @@ import io.swagger.models.Swagger;
  * @see UriRouteMatcher
  * @see RouteMatchers
  */
-public final class Router extends AbstractRouter<Router, Request, Handler, Swagger> implements DescribableHandler {
+public final class Router extends AbstractRouter<Router, Request, Handler, OpenAPI> implements DescribableHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(Router.class);
     private Handler selfApiHandler = new SelfApiHandler();
@@ -120,12 +120,12 @@ public final class Router extends AbstractRouter<Router, Request, Handler, Swagg
     private class SelfApiHandler implements DescribableHandler {
 
         @Override
-        public Swagger api(ApiProducer<Swagger> producer) {
+        public OpenAPI api(ApiProducer<OpenAPI> producer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Swagger handleApiRequest(Context context, Request request) {
+        public OpenAPI handleApiRequest(Context context, Request request) {
             return api;
         }
 

@@ -12,18 +12,18 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.api.transform;
 
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.HeaderParameter;
-import io.swagger.models.parameters.RefParameter;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.parameters.Parameter;
 
 /**
- * Helper methods for applying commonly needed changes to the {@link io.swagger.models.Swagger} model.
+ * Helper methods for applying commonly needed changes to the {@link OpenAPI} model.
  */
 public final class OpenApiHelper {
 
@@ -35,21 +35,28 @@ public final class OpenApiHelper {
      * Adds a header to all operations. For example, one may need to add authentication headers for
      * username and password.
      *
-     * @param header Header model
-     * @param swagger Swagger model
+     * @param header Header parameter model (must have {@code in} set to "header")
+     * @param openApi OpenAPI model
      */
-    public static void addHeaderToAllOperations(final HeaderParameter header, final Swagger swagger) {
+    public static void addHeaderToAllOperations(final Parameter header, final OpenAPI openApi) {
         final String headerKey = header.getName() + "_header";
-        if (swagger.getParameter(headerKey) != null) {
+        Components components = openApi.getComponents();
+        if (components == null) {
+            components = new Components();
+            openApi.setComponents(components);
+        }
+        if (components.getParameters() != null && components.getParameters().get(headerKey) != null) {
             throw new IllegalStateException("Header already exists with name: " + header.getName());
         }
 
-        swagger.addParameter(headerKey, header);
-        final RefParameter refParameter = new RefParameter(headerKey);
+        components.addParameters(headerKey, header);
+        final Parameter refParameter = new Parameter().$ref("#/components/parameters/" + headerKey);
 
-        for (final Path path : swagger.getPaths().values()) {
-            for (final Operation operation : path.getOperations()) {
-                operation.addParameter(refParameter);
+        if (openApi.getPaths() != null) {
+            for (final PathItem pathItem : openApi.getPaths().values()) {
+                for (final Operation operation : pathItem.readOperations()) {
+                    operation.addParametersItem(refParameter);
+                }
             }
         }
     }
@@ -58,25 +65,28 @@ public final class OpenApiHelper {
      * Visits all operations.
      *
      * @param visitor Operation visitor
-     * @param swagger Swagger model
+     * @param openApi OpenAPI model
      */
-    public static void visitAllOperations(final OperationVisitor visitor, final Swagger swagger) {
-        for (final Path path : swagger.getPaths().values()) {
-            for (final Operation operation : path.getOperations()) {
-                visitor.visit(operation);
+    public static void visitAllOperations(final OperationVisitor visitor, final OpenAPI openApi) {
+        if (openApi.getPaths() != null) {
+            for (final PathItem pathItem : openApi.getPaths().values()) {
+                for (final Operation operation : pathItem.readOperations()) {
+                    visitor.visit(operation);
+                }
             }
         }
     }
 
     /**
-     * Visits a Swagger {@code Operation}.
+     * Visits an OpenAPI {@code Operation}.
      */
     public interface OperationVisitor {
         /**
-         * Visits a Swagger {@code Operation}.
+         * Visits an OpenAPI {@code Operation}.
          *
          * @param operation Operation
          */
         void visit(Operation operation);
     }
+
 }

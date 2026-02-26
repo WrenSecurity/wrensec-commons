@@ -12,24 +12,29 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
-
 package org.forgerock.json.resource.http.examples;
 
-import static org.forgerock.http.routing.RoutingMode.*;
-import static org.forgerock.json.resource.Applications.*;
-import static org.forgerock.json.resource.Requests.*;
-import static org.forgerock.json.resource.Resources.*;
-import static org.forgerock.json.resource.RouteMatchers.*;
-import static org.forgerock.json.resource.http.CrestHttp.*;
+import static org.forgerock.http.handler.Handlers.chainOf;
+import static org.forgerock.http.routing.RoutingMode.STARTS_WITH;
+import static org.forgerock.json.resource.Applications.simpleCrestApplication;
+import static org.forgerock.json.resource.Requests.newApiRequest;
+import static org.forgerock.json.resource.Resources.newHandler;
+import static org.forgerock.json.resource.Resources.newInternalConnectionFactory;
+import static org.forgerock.json.resource.RouteMatchers.requestUriMatcher;
+import static org.forgerock.json.resource.http.CrestHttp.newHttpHandler;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.AttributesBuilder;
-import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.Attributes;
+import org.asciidoctor.Options;
 import org.asciidoctor.Placement;
 import org.asciidoctor.SafeMode;
 import org.forgerock.api.markup.ApiDocGenerator;
 import org.forgerock.api.models.ApiDescription;
+import org.forgerock.http.ApiProducer;
 import org.forgerock.http.DescribedHttpApplication;
 import org.forgerock.http.Handler;
 import org.forgerock.http.HttpApplicationException;
@@ -41,23 +46,19 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.RouteMatchers;
 import org.forgerock.http.routing.RoutingMode;
+import org.forgerock.http.swagger.OpenApiRequestFilter;
 import org.forgerock.http.swagger.SwaggerApiProducer;
 import org.forgerock.http.util.Uris;
 import org.forgerock.json.resource.MemoryBackend;
 import org.forgerock.json.resource.ResourcePath;
 import org.forgerock.json.resource.Router;
 import org.forgerock.json.resource.descriptor.examples.handler.UserCollectionHandler;
-import org.forgerock.http.ApiProducer;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.routing.DelegatingRouteMatcher;
 import org.forgerock.services.routing.RouteMatch;
 import org.forgerock.util.Factory;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
-
-import io.swagger.models.Info;
-import io.swagger.models.Scheme;
-import io.swagger.models.Swagger;
 
 /**
  * Http Application implementation to demonstrate integration with the Commons HTTP Framework.
@@ -99,16 +100,16 @@ public class CrestHttpApplication implements DescribedHttpApplication {
 
                         final String html;
                         synchronized (asciidoctor) {
-                            html = asciidoctor.render(asciiDocMarkup,
-                                    OptionsBuilder.options()
-                                            .attributes(AttributesBuilder.attributes()
+                            html = asciidoctor.convert(asciiDocMarkup,
+                                    Options.builder()
+                                            .attributes(Attributes.builder()
                                                     .tableOfContents(Placement.LEFT)
                                                     .sectNumLevels(5)
                                                     .attribute("toclevels", 5)
-                                                    .get())
+                                                    .build())
                                             .safe(SafeMode.SAFE)
-                                            .headerFooter(true)
-                                            .get());
+                                            .standalone(true)
+                                            .build());
                         }
 
                         final Response response = new Response(Status.OK);
@@ -160,7 +161,7 @@ public class CrestHttpApplication implements DescribedHttpApplication {
                 return Response.newResponsePromise(response);
             }
         });
-        return router;
+        return chainOf(router, new OpenApiRequestFilter());
     }
 
     @Override
@@ -174,7 +175,7 @@ public class CrestHttpApplication implements DescribedHttpApplication {
     }
 
     @Override
-    public ApiProducer<Swagger> getApiProducer() {
-        return new SwaggerApiProducer(new Info().title("CREST Examples"), null, null, Scheme.HTTP);
+    public ApiProducer<OpenAPI> getApiProducer() {
+        return new SwaggerApiProducer(new Info().title("CREST Examples"), null, null, false);
     }
 }

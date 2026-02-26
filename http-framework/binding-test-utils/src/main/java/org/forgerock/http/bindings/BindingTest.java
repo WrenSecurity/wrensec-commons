@@ -13,13 +13,9 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.http.bindings;
 
-import static io.swagger.models.Scheme.HTTP;
-import static io.swagger.models.Scheme.HTTPS;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.forgerock.http.Applications.describedHttpApplication;
@@ -34,8 +30,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.info.Info;
 import java.util.List;
-
 import org.assertj.core.api.SoftAssertionError;
 import org.assertj.core.api.SoftAssertions;
 import org.forgerock.http.ApiProducer;
@@ -66,11 +66,6 @@ import org.forgerock.util.promise.Promise;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import io.swagger.models.Info;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
 
 /**
  * A test class for CHF bindings.
@@ -215,7 +210,7 @@ public abstract class BindingTest {
     public void testRequestApi() throws Exception {
         DescribableHandler testHandler = chainOf(new TestHandler(), new OpenApiRequestFilter());
         HttpApplication application = describedHttpApplication(testHandler, null,
-                new SwaggerApiProducer(new Info(), "", "", asList(HTTP, HTTPS)));
+                new SwaggerApiProducer(new Info(), "", "", false));
         addApplication(application);
 
         port = startServer();
@@ -231,9 +226,7 @@ public abstract class BindingTest {
             assertThat(json(response.getEntity().getJson())).isObject()
                     .hasObject("paths")
                     .hasObject("test")
-                    .hasObject("post")
-                    .hasArray("produces")
-                    .containsExactly("text/plain");
+                    .hasObject("post");
         }
     }
 
@@ -343,13 +336,15 @@ public abstract class BindingTest {
         }
 
         @Override
-        public Swagger api(ApiProducer<Swagger> producer) {
+        public OpenAPI api(ApiProducer<OpenAPI> producer) {
             return null;
         }
 
         @Override
-        public Swagger handleApiRequest(Context context, Request request) {
-            return new Swagger().path("test", new Path().post(new Operation().produces("text/plain")));
+        public OpenAPI handleApiRequest(Context context, Request request) {
+            Paths paths = new Paths();
+            paths.addPathItem("test", new PathItem().post(new Operation()));
+            return new OpenAPI().paths(paths);
         }
 
         @Override

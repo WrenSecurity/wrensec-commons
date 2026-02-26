@@ -12,18 +12,21 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.api.transform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.forgerock.util.i18n.LocalizableString;
 
-import io.swagger.models.Response;
-
 /**
- * Localizable {@link io.swagger.models.Response}.
+ * Localizable {@link ApiResponse}.
  */
-class LocalizableResponse extends Response implements LocalizableDescription<Response> {
+class LocalizableResponse extends ApiResponse implements LocalizableDescription<ApiResponse> {
+
     private LocalizableString description;
 
     @Override
@@ -45,8 +48,15 @@ class LocalizableResponse extends Response implements LocalizableDescription<Res
     }
 
     @Override
+    @JsonProperty("description")
     public LocalizableString getLocalizableDescription() {
         return description;
+    }
+
+    @Override
+    @JsonIgnore
+    public String getDescription() {
+        return super.getDescription();
     }
 
 }

@@ -13,19 +13,18 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.transform;
-
-import org.forgerock.util.i18n.LocalizableString;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.forgerock.util.i18n.LocalizableString;
 
 /**
  * A localizable model object with a description.
  * @param <T> The self-type reference.
  */
 interface LocalizableDescription<T> {
+
     /**
      * Set the localizable description.
      * @param description The title.

@@ -16,7 +16,6 @@
 
 package org.forgerock.http.servlet.example;
 
-import static io.swagger.models.Scheme.HTTP;
 import static org.forgerock.http.handler.Handlers.chainOf;
 import static org.forgerock.http.routing.RouteMatchers.requestUriMatcher;
 import static org.forgerock.util.promise.Promises.newResultPromise;
@@ -43,8 +42,8 @@ import org.forgerock.util.Factory;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
-import io.swagger.models.Info;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 
 /**
  * Example single {@link HttpApplication} deployment which registers a
@@ -97,7 +96,7 @@ public class ExampleHttpApplication implements DescribedHttpApplication {
     }
 
     @Override
-    public ApiProducer<Swagger> getApiProducer() {
-        return new SwaggerApiProducer(new Info().title("Example HTTP Application"), "/servlet", "localhost", HTTP);
+    public ApiProducer<OpenAPI> getApiProducer() {
+        return new SwaggerApiProducer(new Info().title("Example HTTP Application"), "/servlet", "localhost", false);
     }
 }

@@ -12,45 +12,30 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 package org.forgerock.api.transform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.forgerock.util.i18n.LocalizableString;
 
-import io.swagger.models.ComposedModel;
+/**
+ * Localizable {@link RequestBody}.
+ */
+class LocalizableRequestBody extends RequestBody implements LocalizableDescription<RequestBody> {
 
-/** Localizable {@link ComposedModel}. */
-class LocalizableComposedModel extends ComposedModel
-                               implements LocalizableTitleAndDescription<LocalizableComposedModel> {
-    private LocalizableString title;
     private LocalizableString description;
 
     @Override
-    public LocalizableComposedModel title(String title) {
-        setTitle(title);
+    public LocalizableRequestBody description(LocalizableString desc) {
+        this.description = desc;
         return this;
     }
 
     @Override
-    public LocalizableComposedModel title(LocalizableString title) {
-        this.title = title;
-        return this;
-    }
-
-    @Override
-    public LocalizableComposedModel description(LocalizableString description) {
-        this.description = description;
-        return this;
-    }
-
-    @Override
-    public void setTitle(String title) {
-        super.setTitle(title);
-        this.title = new LocalizableString(title);
-    }
-
-    @Override
-    public LocalizableComposedModel description(String description) {
+    public LocalizableRequestBody description(String description) {
         setDescription(description);
         return this;
     }
@@ -62,12 +47,15 @@ class LocalizableComposedModel extends ComposedModel
     }
 
     @Override
-    public LocalizableString getLocalizableTitle() {
-        return title;
-    }
-
-    @Override
+    @JsonProperty("description")
     public LocalizableString getLocalizableDescription() {
         return description;
     }
+
+    @Override
+    @JsonIgnore
+    public String getDescription() {
+        return super.getDescription();
+    }
+
 }
