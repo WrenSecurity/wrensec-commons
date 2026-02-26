@@ -89,7 +89,7 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
-        <pgpVerifyKeysVersion>1.9.10</pgpVerifyKeysVersion>
+        <pgpVerifyKeysVersion>1.9.11</pgpVerifyKeysVersion>
 
         <activation-api.version>2.1.4</activation-api.version>
         <assertj.version>3.19.0</assertj.version>
