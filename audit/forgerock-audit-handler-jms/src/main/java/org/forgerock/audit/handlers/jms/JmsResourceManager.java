@@ -133,7 +133,7 @@ class JmsResourceManager {
      * @param session the session to get the producer from.
      * @return a new producer from the session with the destination set to the configured JMS topic.
      * @throws JMSException if there is trouble creating the producer.
-     * @see Session#createProducer(javax.jms.Destination)
+     * @see Session#createProducer(jakarta.jms.Destination)
      * @see MessageProducer#setDeliveryMode(int)
      */
     public MessageProducer createProducer(Session session) throws JMSException {
