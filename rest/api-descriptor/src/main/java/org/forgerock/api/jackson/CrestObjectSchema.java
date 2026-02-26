@@ -19,23 +19,23 @@ package org.forgerock.api.jackson;
 import static org.forgerock.api.jackson.JacksonUtils.OBJECT_MAPPER;
 import static org.forgerock.json.JsonValue.json;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema.AdditionalProperties;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema.NoAdditionalProperties;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema.SchemaAdditionalProperties;
+import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import javax.validation.ValidationException;
-
 import org.forgerock.api.enums.ReadPolicy;
 import org.forgerock.api.enums.WritePolicy;
 import org.forgerock.json.JsonValue;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
 
 /**
  * An extension to the Jackson {@code ObjectSchema} that includes the custom CREST JSON Schema attributes.

@@ -1,15 +1,4 @@
-swagger: "2.0"
-security_definitions:
-  login:
-    type: basic
-    description: Basic authentication for login - try password = username!
-  oauth2:
-    type: oauth2
-    flow: accessCode
-    authorizationUrl: BASE_URL/authorize
-    tokenUrl: BASE_URL/token
-    scopes:
-      test: A simple scope - not required.
+openapi: "3.0.3"
 tags:
   - name: CHF OAuth 2.0
 paths:
@@ -28,24 +17,28 @@ paths:
         in: query
         description: The client identifier
         required: true
-        type: string
+        schema:
+          type: string
       - name: redirect_uri
         in: query
         description: The redirect URI for redirection responses
         required: true
-        type: string
+        schema:
+          type: string
       - name: response_type
         in: query
         description: The OAuth 2.0 response type - only code is accepted
-        enum:
-        - code
         required: true
-        type: string
+        schema:
+          type: string
+          enum:
+          - code
       - name: state
         in: query
         description: The OAuth 2.0 state parameter
         required: false
-        type: string
+        schema:
+          type: string
   /login:
     get:
       summary: Login url
@@ -61,42 +54,43 @@ paths:
       summary: OAuth 2.0 Token Endpoint
       tags:
         - CHF OAuth 2.0
-      consumes:
-      - application/x-www-form-urlencoded
-      produces:
-      - application/json
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+              - client_id
+              - client_secret
+              - redirect_uri
+              - grant_type
+              properties:
+                client_id:
+                  type: string
+                  description: The client identifier
+                client_secret:
+                  type: string
+                  description: The client secret
+                redirect_uri:
+                  type: string
+                  description: The redirect URI used in the authorization request
+                grant_type:
+                  type: string
+                  description: The OAuth 2.0 grant type - must be authorization_code
+                  enum:
+                  - authorization_code
       responses:
         "400":
           description: Bad request data, according to OAuth 2.0 specification
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                description: The OAuth 2.0 error code.
-      parameters:
-      - name: client_id
-        in: formData
-        description: The client identifier
-        required: true
-        type: string
-      - name: client_secret
-        in: formData
-        description: The client secret
-        required: true
-        type: string
-      - name: redirect_uri
-        in: formData
-        description: The redirect URI used in the authorization request
-        required: true
-        type: string
-      - name: grant_type
-        in: formData
-        description: The OAuth 2.0 grant type - must be authorization_code
-        enum:
-        - authorization_code
-        required: true
-        type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: The OAuth 2.0 error code.
   /api:
     get:
       summary: Get the username from the token
@@ -104,16 +98,30 @@ paths:
         - CHF OAuth 2.0
       security:
         - oauth2: []
-      produces:
-      - application/json
       responses:
         "200":
           description: Successful response containing the username from the bearer token
-          schema:
-            type: object
-            properties:
-              user:
-                type: string
-                description: The username
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: string
+                    description: The username
         "401":
           description: Could not validate the bearer token.
+components:
+  securitySchemes:
+    login:
+      type: http
+      scheme: basic
+      description: Basic authentication for login - try password = username!
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: BASE_URL/authorize
+          tokenUrl: BASE_URL/token
+          scopes:
+            test: A simple scope - not required.

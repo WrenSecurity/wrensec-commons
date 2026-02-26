@@ -13,17 +13,14 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.jackson;
 
-import javax.validation.ValidationException;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.BooleanSchema;
+import jakarta.validation.ValidationException;
 import org.forgerock.api.enums.ReadPolicy;
-import org.forgerock.json.JsonValue;
-
-import com.fasterxml.jackson.module.jsonSchema.types.BooleanSchema;
 import org.forgerock.api.enums.WritePolicy;
+import org.forgerock.json.JsonValue;
 
 /**
  * An extension to the Jackson {@code BooleanSchema} that includes the custom CREST JSON Schema attributes.

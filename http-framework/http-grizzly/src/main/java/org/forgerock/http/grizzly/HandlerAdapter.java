@@ -59,7 +59,7 @@ import org.glassfish.grizzly.http.server.util.Globals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * A Grizzly implementation which provides integration between the Grizzly API and the common HTTP Framework.
@@ -94,7 +94,7 @@ final class HandlerAdapter extends HttpHandler {
         try {
             describedHandler = chainOf(httpApplication.start(), new TransactionIdInboundFilter());
             if (httpApplication instanceof DescribedHttpApplication) {
-                ApiProducer<Swagger> apiProducer = ((DescribedHttpApplication) httpApplication).getApiProducer();
+                ApiProducer<OpenAPI> apiProducer = ((DescribedHttpApplication) httpApplication).getApiProducer();
                 describedHandler.api(apiProducer);
             }
         } catch (HttpApplicationException e) {

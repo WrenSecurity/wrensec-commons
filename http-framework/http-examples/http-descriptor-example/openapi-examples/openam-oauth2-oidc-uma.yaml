@@ -1,4 +1,4 @@
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: OpenAM Support for OAuth 2.0 and OAuth 2.0-based APIs
   description: |
@@ -10,10 +10,8 @@ info:
     <https://www.snip2code.com/Snippet/122743/Swagger-2-0-Declaration-for-OAuth-2-0-en>.
 
   version: "1.0"
-host: openam.example.com:8443
-schemes:
- - https
-basePath: /openam
+servers:
+  - url: https://openam.example.com:8443/openam
 paths:
   /oauth2/.well-known/webfinger:
     get:
@@ -26,22 +24,27 @@ paths:
       parameters:
         - name: resource
           in: query
-          type: string
+          schema:
+            type: string
           required: true
         - name: rel
           in: query
-          type: string
+          schema:
+            type: string
+            default: http://openid.net/specs/connect/1.0/issuer
           required: true
-          default: http://openid.net/specs/connect/1.0/issuer
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the OpenID Provider service
       responses:
         200:
           description: OpenID Provider metadata
-          schema:
-            type: object
+          content:
+            application/json:
+              schema:
+                type: object
   /oauth2/.well-known/openid-configuration:
     get:
       summary: OpenID Provider information
@@ -51,13 +54,16 @@ paths:
       parameters:
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the OpenID Provider service
       responses:
         200:
           description: OpenID Provider metadata
-          schema:
-            type: object
+          content:
+            application/json:
+              schema:
+                type: object
   /oauth2/connect/register:
     post:
       summary: OpenID Connect dynamic registration
@@ -67,29 +73,34 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and OAuth 2.0 token for registration
           required: true
-        - name: registration
-          in: body
-          schema:
-            type: object
-            properties:
-              client_name:
-                type: string
-              redirect_uris:
-                type: array
-                items:
-                  type: string
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the OpenID Provider service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_name:
+                  type: string
+                redirect_uris:
+                  type: array
+                  items:
+                    type: string
       responses:
         200:
           description: OpenID Provider metadata
-          schema:
-            type: object
+          content:
+            application/json:
+              schema:
+                type: object
   /oauth2/authorize:
     get:
       summary: Authorization request
@@ -100,28 +111,33 @@ paths:
       parameters:
         - name: response_type
           in: query
-          type: string
-          enum:
-            - code
-            - token
+          schema:
+            type: string
+            enum:
+              - code
+              - token
           required: true
         - name: client_id
           in: query
           description: See RFC 6749.
-          type: string
+          schema:
+            type: string
           required: true
         - name: redirect_uri
           in: query
           description: See RFC 6749.
-          type: string
+          schema:
+            type: string
         - name: scope
           in: query
           description: See RFC 6749.
-          type: string
+          schema:
+            type: string
         - name: state
           in: query
           description: See RFC 6749.
-          type: string
+          schema:
+            type: string
       responses:
         302:
           description: See RFC 6749.
@@ -138,7 +154,8 @@ paths:
 
                 This description needs more content from RFC 6749.
 
-              type: string
+              schema:
+                type: string
   /oauth2/access_token:
     post:
       summary: Access token request
@@ -149,64 +166,64 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: HTTP Basic Auth header with client credentials.
-        - name: grant_type
-          in: formData
-          type: string
-          enum:
-            - authorization_code
-            - client_credentials
-            - password
-            - refresh_token
-            - urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Asaml2-bearer
-          required: true
-        - name: client_id
-          in: formData
-          type: string
-        - name: client_secret
-          in: formData
-          type: string
-        - name: code
-          in: formData
-          type: string
-        - name: redirect_uri
-          in: formData
-          type: string
-        - name: refresh_token
-          in: formData
-          type: string
-        - name: username
-          in: formData
-          type: string
-        - name: password
-          in: formData
-          type: string
-        - name: scope
-          in: formData
-          type: string
-        - name: assertion
-          in: formData
-          type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - authorization_code
+                    - client_credentials
+                    - password
+                    - refresh_token
+                    - urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Asaml2-bearer
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+                code:
+                  type: string
+                redirect_uri:
+                  type: string
+                refresh_token:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+                scope:
+                  type: string
+                assertion:
+                  type: string
       responses:
         200:
           description: See RFC 6749.
-          schema:
-            type: object
-            properties:
-              access_token:
-                type: string
-              token_type:
-                type: string
-                default: Bearer
-              expires_in:
-                type: number
-              refresh_token:
-                type: string
-              scope:
-                type: string
-              state:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+                    default: Bearer
+                  expires_in:
+                    type: number
+                  refresh_token:
+                    type: string
+                  scope:
+                    type: string
+                  state:
+                    type: string
         302:
           description: See RFC 6749.
           headers:
@@ -216,42 +233,48 @@ paths:
 
                This description needs more content from RFC 6749.
 
-              type: string
+              schema:
+                type: string
   /oauth2/device:
     post:
       summary: Device authorization request
       description: See draft-ietf-oauth-device-flow.
       tags:
         - OAuth 2.0
-      parameters:
-        - name: response_type
-          in: formData
-          type: string
-          enum:
-            - device_code
-          required: true
-        - name: client_id
-          in: formData
-          type: string
-        - name: scope
-          in: formData
-          type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - response_type
+              properties:
+                response_type:
+                  type: string
+                  enum:
+                    - device_code
+                client_id:
+                  type: string
+                scope:
+                  type: string
       responses:
         200:
           description: See draft-ietf-oauth-device-flow.
-          schema:
-            type: object
-            properties:
-              device_code:
-                type: string
-              user_code:
-                type: string
-              expires_in:
-                type: number
-              verification_uri:
-                type: string
-              interval:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_code:
+                    type: string
+                  user_code:
+                    type: string
+                  expires_in:
+                    type: number
+                  verification_uri:
+                    type: string
+                  interval:
+                    type: string
   /oauth2/introspect:
     post:
       summary: Retrieve token metadata
@@ -261,41 +284,45 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: HTTP Basic auth with client credentials
         - name: token
           in: query
-          type: string
+          schema:
+            type: string
           description: The `tokenId` of the token to introspect
       responses:
         200:
           description: Token metadata
-          schema:
-            type: object
-            properties:
-              active:
-                type: boolean
-                description: true if still valid
-              scope:
-                type: string
-                description: Space-separated list of scopes
-              client_id:
-                type: string
-                description: Client having requested the token
-              user_id:
-                type: string
-                description: User having authorized the token
-              token_type:
-                type: string
-              exp:
-                type: number
-                description: Expiration time in seconds since the epoc
-              sub:
-                type: string
-                description: Subject of the token
-              iss:
-                type: string
-                description: Issuer of the token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  active:
+                    type: boolean
+                    description: true if still valid
+                  scope:
+                    type: string
+                    description: Space-separated list of scopes
+                  client_id:
+                    type: string
+                    description: Client having requested the token
+                  user_id:
+                    type: string
+                    description: User having authorized the token
+                  token_type:
+                    type: string
+                  exp:
+                    type: number
+                    description: Expiration time in seconds since the epoc
+                  sub:
+                    type: string
+                    description: Subject of the token
+                  iss:
+                    type: string
+                    description: Issuer of the token
   /oauth2/resource_set:
     get:
       summary: List resource sets
@@ -305,20 +332,24 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and PAT
           required: true
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the UMA AS
       responses:
         200:
           description: UMA resource set IDs
-          schema:
-            type: array
-            items:
-              type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
     post:
       summary: Register resource set
       description: See UMA specs.
@@ -327,43 +358,48 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and PAT
           required: true
         - name: realm
           in: query
-          type: string
-          description: OpenAM realm housing the UMA AS
-        - name: resource_set
-          in: body
-          description: UMA resource set
           schema:
-            type: object
-            properties:
-              name:
-                type: string
-              icon_uri:
-                type: string
-              scopes:
-                type: array
-                items:
+            type: string
+          description: OpenAM realm housing the UMA AS
+      requestBody:
+        description: UMA resource set
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
                   type: string
-              labels:
-                type: array
-                items:
+                icon_uri:
                   type: string
-              type:
-                type: string
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                labels:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  type: string
       responses:
         200:
           description: UMA resource set response
-          schema:
-            type: object
-            properties:
-              _id:
-                type: string
-              user_access_policy_uri:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  user_access_policy_uri:
+                    type: string
   /oauth2/resource_set/{id}:
     get:
       summary: Read resource set
@@ -373,49 +409,57 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and PAT
           required: true
         - name: id
           in: path
-          type: string
+          schema:
+            type: string
           description: Resource set ID
           required: true
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the UMA AS
       responses:
         200:
           description: UMA resource set
           headers:
             ETag:
-              type: string
+              schema:
+                type: string
               description: Resource set revision identifier
-          schema:
-            type: object
-            properties:
-              _id:
-                type: string
-              user_access_policy_uri:
-                type: string
-              scopes:
-                type: array
-                items:
-                  type: string
-              name:
-                type: string
-              icon_uri:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  user_access_policy_uri:
+                    type: string
+                  scopes:
+                    type: array
+                    items:
+                      type: string
+                  name:
+                    type: string
+                  icon_uri:
+                    type: string
         404:
           description: Not Found
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              error_description:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  error_description:
+                    type: string
     put:
       summary: Update resource set
       description: See UMA specs.
@@ -424,72 +468,84 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and PAT
           required: true
         - name: id
           in: path
-          type: string
+          schema:
+            type: string
           description: Resource set ID
           required: true
-        - name: resource_set
-          in: body
-          description: UMA resource set
-          schema:
-            type: object
-            properties:
-              name:
-                type: string
-              icon_uri:
-                type: string
-              scopes:
-                type: array
-                items:
-                  type: string
-              labels:
-                type: array
-                items:
-                  type: string
-              type:
-                type: string
         - name: If-Match
           in: header
-          type: string
+          schema:
+            type: string
           description: ETag for MVCC
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the UMA AS
+      requestBody:
+        description: UMA resource set
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                icon_uri:
+                  type: string
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                labels:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  type: string
       responses:
         200:
           description: UMA resource set
           headers:
             ETag:
-              type: string
+              schema:
+                type: string
               description: Resource set revision identifier
-          schema:
-            type: object
-            properties:
-              _id:
-                type: string
-              user_access_policy_uri:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  user_access_policy_uri:
+                    type: string
         404:
           description: Not Found
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              error_description:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  error_description:
+                    type: string
         412:
           description: ETag did not match
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
     delete:
       summary: Update resource set
       description: See UMA specs.
@@ -498,52 +554,63 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and PAT
           required: true
         - name: id
           in: path
-          type: string
+          schema:
+            type: string
           description: Resource set ID
           required: true
         - name: If-Match
           in: header
-          type: string
+          schema:
+            type: string
           description: ETag for MVCC
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the UMA AS
       responses:
         200:
           description: UMA resource set
           headers:
             ETag:
-              type: string
+              schema:
+                type: string
               description: Resource set revision identifier
-          schema:
-            type: object
-            properties:
-              _id:
-                type: string
-              user_access_policy_uri:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  user_access_policy_uri:
+                    type: string
         404:
           description: Not Found
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              error_description:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  error_description:
+                    type: string
         412:
           description: ETag did not match
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /oauth2/tokeninfo:
     get:
       summary: Token validation request
@@ -555,33 +622,36 @@ paths:
       parameters:
         - name: access_token
           in: query
-          type: string
+          schema:
+            type: string
           description: The `tokenId` of the token to validate
       responses:
         200:
           description: Token information
-          schema:
-            type: object
-            properties:
-              _scope key_:
-                type: string
-                description: Value associated with a specific scope
-              scope:
-                type: array
-                items:
-                  type: string
-              realm:
-                type: string
-                description: OpenAM realm where access token was granted
-                default: /
-              token_type:
-                type: string
-              expires_in:
-                type: number
-                description: Seconds to expiration
-              access_token:
-                type: string
-                description: Token ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _scope key_:
+                    type: string
+                    description: Value associated with a specific scope
+                  scope:
+                    type: array
+                    items:
+                      type: string
+                  realm:
+                    type: string
+                    description: OpenAM realm where access token was granted
+                    default: /
+                  token_type:
+                    type: string
+                  expires_in:
+                    type: number
+                    description: Seconds to expiration
+                  access_token:
+                    type: string
+                    description: Token ID
   /oauth2/userinfo:
     get:
       summary: OpenID Connect user information
@@ -591,23 +661,28 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and OpenID Connect access token
           required: true
         - name: realm
           in: query
-          type: string
+          schema:
+            type: string
           description: OpenAM realm housing the OpenID Provider service
       responses:
         200:
           description: OpenID user info
-          schema:
-            type: object
+          content:
+            application/json:
+              schema:
+                type: object
         401:
           description: Error response
           headers:
             WWW-Authenticate:
-              type: string
+              schema:
+                type: string
               description: The `error` and `error_description`
   /uma{realm}/.well-known/uma-configuration:
     get:
@@ -618,16 +693,19 @@ paths:
       parameters:
         - name: realm
           in: path
-          type: string
+          schema:
+            type: string
+            default: /
           description: |
            OpenAM realm housing the Authorization Server. Starts with `/`.
-          default: /
           required: true
       responses:
         200:
           description: UMA Authorization Server metadata
-          schema:
-            type: object
+          content:
+            application/json:
+              schema:
+                type: object
   /uma{realm}/authz_request:
     post:
       summary: Requesting party token request
@@ -637,41 +715,48 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and AAT
           required: true
         - name: realm
           in: path
-          type: string
+          schema:
+            type: string
+            default: /
           description: |
             OpenAM realm housing the Authorization Server. Starts with `/`.
-          default: /
           required: true
-        - name: request
-          in: body
-          description: Permission request ticket
-          schema:
-            type: object
-            properties:
-              ticket:
-                type: string
+      requestBody:
+        description: Permission request ticket
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket:
+                  type: string
       responses:
         201:
           description: Requesting party token
-          schema:
-            type: object
-            properties:
-              rpt:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rpt:
+                    type: string
         403:
           description: Forbidden
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              error_description:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  error_description:
+                    type: string
   /uma{realm}/permission_request:
     post:
       summary: Let UMA RS register access request from client
@@ -681,41 +766,49 @@ paths:
       parameters:
         - name: Authorization
           in: header
-          type: string
+          schema:
+            type: string
           description: Bearer and PAT
           required: true
         - name: realm
           in: path
-          type: string
+          schema:
+            type: string
+            default: /
           description: |
             OpenAM realm housing the Authorization Server. Starts with `/`.
-          default: /
           required: true
-        - name: request
-          in: body
-          description: Access request registration
-          schema:
-            type: object
-            properties:
-              resource_set_id:
-                type: string
-              scopes:
-                items:
+      requestBody:
+        description: Access request registration
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resource_set_id:
                   type: string
+                scopes:
+                  type: array
+                  items:
+                    type: string
       responses:
         201:
           description: Registration ticket
-          schema:
-            type: object
-            properties:
-              ticket:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    type: string
         403:
           description: Forbidden
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              error_description:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  error_description:
+                    type: string

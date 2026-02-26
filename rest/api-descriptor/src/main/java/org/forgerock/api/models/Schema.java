@@ -20,23 +20,21 @@ import static org.forgerock.api.jackson.JacksonUtils.OBJECT_MAPPER;
 import static org.forgerock.api.jackson.JacksonUtils.schemaFor;
 import static org.forgerock.json.JsonValue.json;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import org.forgerock.api.jackson.JacksonUtils;
-import org.wrensecurity.guava.common.base.Strings;
-import org.forgerock.json.JsonValue;
-import org.forgerock.util.Reject;
-
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import org.forgerock.api.jackson.JacksonUtils;
+import org.forgerock.json.JsonValue;
+import org.forgerock.util.Reject;
+import org.wrensecurity.guava.common.base.Strings;
 
 /**
  * Class that represents the Schema type in API descriptor.
