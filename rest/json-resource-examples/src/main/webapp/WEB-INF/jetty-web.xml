@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://eclipse.dev/jetty/configure_12.dtd">
+<Configure class="org.eclipse.jetty.ee11.webapp.WebAppContext">
+    <!-- Expose Jetty servlet classes to be usable in web.xml (e.g. ResourceServlet). -->
+    <Get name="hiddenClassMatcher">
+        <Call name="exclude">
+            <Arg>org.eclipse.jetty.ee11.servlet.</Arg>
+        </Call>
+    </Get>
+</Configure>

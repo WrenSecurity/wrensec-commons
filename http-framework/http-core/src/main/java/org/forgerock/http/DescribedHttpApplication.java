@@ -16,7 +16,7 @@
 
 package org.forgerock.http;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * An {@link HttpApplication} that produces OpenAPI API Descriptors.
@@ -26,5 +26,5 @@ public interface DescribedHttpApplication extends HttpApplication {
      * Provides the OpenAPI descriptor producer with which to produce the API.
      * @return Non-null producer.
      */
-    ApiProducer<Swagger> getApiProducer();
+    ApiProducer<OpenAPI> getApiProducer();
 }

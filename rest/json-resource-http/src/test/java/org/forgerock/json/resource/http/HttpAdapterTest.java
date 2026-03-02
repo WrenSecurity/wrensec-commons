@@ -12,11 +12,10 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
- * Portions Copyright 2018-2021 Wren Security.
+ * Portions Copyright 2018-2026 Wren Security.
  */
 package org.forgerock.json.resource.http;
 
-import static io.swagger.models.Scheme.HTTP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.forgerock.api.models.ApiDescription.apiDescription;
@@ -80,8 +79,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import io.swagger.models.Info;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 
 public class HttpAdapterTest {
 
@@ -164,15 +163,16 @@ public class HttpAdapterTest {
                 .willReturn(API_DESCRIPTION);
         Request request = new Request();
         AttributesContext context = new AttributesContext(new RootContext());
-        adapter.api(new SwaggerApiProducer(new Info(), "/base/path", "localhost:8080", HTTP));
+        adapter.api(new SwaggerApiProducer(new Info(), "/base/path", "localhost:8080", false));
 
         // When
-        Swagger swagger = adapter.handleApiRequest(context, request);
+        OpenAPI openApi = adapter.handleApiRequest(context, request);
 
         // Then
-        assertThat(swagger).isNotNull();
-        assertThat(swagger.getPaths()).containsKey("/mypath");
-        assertThat(swagger.getBasePath()).isEqualTo("/base/path");
+        assertThat(openApi).isNotNull();
+        assertThat(openApi.getPaths()).containsKey("/mypath");
+        assertThat(openApi.getServers()).isNotEmpty();
+        assertThat(openApi.getServers().get(0).getUrl()).contains("/base/path");
         ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
         ArgumentCaptor<org.forgerock.json.resource.Request> requestCaptor
                 = ArgumentCaptor.forClass(org.forgerock.json.resource.Request.class);
@@ -193,15 +193,16 @@ public class HttpAdapterTest {
         Request request = new Request();
         UriRouterContext context = new UriRouterContext(new AttributesContext(new RootContext()),
                 "", "subpath/%7Bparam%7D", Collections.<String, String>emptyMap());
-        adapter.api(new SwaggerApiProducer(new Info(), "/base/path", "localhost:8080", HTTP));
+        adapter.api(new SwaggerApiProducer(new Info(), "/base/path", "localhost:8080", false));
 
         // When
-        Swagger swagger = adapter.handleApiRequest(context, request);
+        OpenAPI openApi = adapter.handleApiRequest(context, request);
 
         // Then
-        assertThat(swagger).isNotNull();
-        assertThat(swagger.getPaths()).containsKey("/subpath/{param}/mypath");
-        assertThat(swagger.getBasePath()).isEqualTo("/base/path");
+        assertThat(openApi).isNotNull();
+        assertThat(openApi.getPaths()).containsKey("/subpath/{param}/mypath");
+        assertThat(openApi.getServers()).isNotEmpty();
+        assertThat(openApi.getServers().get(0).getUrl()).contains("/base/path");
         ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
         ArgumentCaptor<org.forgerock.json.resource.Request> requestCaptor
                 = ArgumentCaptor.forClass(org.forgerock.json.resource.Request.class);
@@ -265,7 +266,7 @@ public class HttpAdapterTest {
 
         // Avoid NPE
         ApiProducer apiProducer = mock(ApiProducer.class);
-        given(apiProducer.addApiInfo(any())).willReturn(new Swagger());
+        given(apiProducer.addApiInfo(any())).willReturn(new OpenAPI());
 
         // Init the router API
         adapter.api(apiProducer);

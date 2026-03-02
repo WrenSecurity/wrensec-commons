@@ -13,13 +13,11 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.transform;
-
-import org.forgerock.util.i18n.LocalizableString;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.forgerock.util.i18n.LocalizableString;
 
 /**
  * Interface for common swagger model objects that support localizable titles and descriptions.

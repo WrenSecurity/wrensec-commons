@@ -13,23 +13,23 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.jackson;
 
-import com.fasterxml.jackson.module.jsonSchema.factories.JsonSchemaFactory;
-import com.fasterxml.jackson.module.jsonSchema.types.AnySchema;
-import com.fasterxml.jackson.module.jsonSchema.types.ArraySchema;
-import com.fasterxml.jackson.module.jsonSchema.types.BooleanSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.IntegerSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.NumberSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.StringSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.JsonSchemaFactory;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.AnySchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ArraySchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.BooleanSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.IntegerSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.NumberSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.StringSchema;
 
 /**
  * A {@code JsonSchemaFactory} that returns the extension schema objects rather than the default Jackson
  * implementations.
  */
 public class CrestJsonSchemaFactory extends JsonSchemaFactory {
+
     @Override
     public ObjectSchema objectSchema() {
         return new CrestObjectSchema();

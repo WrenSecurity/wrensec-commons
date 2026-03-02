@@ -12,29 +12,34 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.http.swagger;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.tags.Tag;
 
 /**
- * Extension of {@link Swagger} to override some of its behaviors.
+ * Extension of {@link OpenAPI} to override some of its behaviors.
  */
-public class SwaggerExtended extends Swagger {
+public class SwaggerExtended extends OpenAPI {
 
+    /**
+     * Adds a tag item, de-duplicating by tag name.
+     *
+     * @param tagsItem The tag to add.
+     * @return This instance.
+     */
     @Override
-    public Map<String, Path> getPaths() {
-        if (paths instanceof LinkedHashMap) {
-            // assume paths are already sorted
-            return paths;
+    public OpenAPI addTagsItem(Tag tagsItem) {
+        if (getTags() != null) {
+            for (Tag existing : getTags()) {
+                if (existing.getName() != null && existing.getName().equals(tagsItem.getName())) {
+                    return this;
+                }
+            }
         }
-        // re-sort paths by key
-        return super.getPaths();
+        return super.addTagsItem(tagsItem);
     }
-
 }

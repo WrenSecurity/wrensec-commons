@@ -12,91 +12,78 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 package org.forgerock.http.swagger;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.wrensecurity.guava.common.base.Strings.isNullOrEmpty;
 import static org.forgerock.http.util.Paths.addLeadingSlash;
 import static org.forgerock.http.util.Paths.removeTrailingSlash;
+import static org.wrensecurity.guava.common.base.Strings.isNullOrEmpty;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.tags.Tag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.wrensecurity.guava.common.base.Function;
 import org.forgerock.http.ApiProducer;
 import org.forgerock.http.header.AcceptApiVersionHeader;
 import org.forgerock.http.routing.Version;
-
-import io.swagger.models.Info;
-import io.swagger.models.Model;
-import io.swagger.models.Path;
-import io.swagger.models.Response;
-import io.swagger.models.Scheme;
-import io.swagger.models.SecurityRequirement;
-import io.swagger.models.Swagger;
-import io.swagger.models.Tag;
-import io.swagger.models.auth.SecuritySchemeDefinition;
-import io.swagger.models.parameters.HeaderParameter;
-import io.swagger.models.parameters.Parameter;
+import org.wrensecurity.guava.common.base.Function;
 
 /**
- * An API Producer for APIs that use the Swagger model implementation of the OpenAPI specification.
+ * An API Producer for APIs that use the OpenAPI 3.0 model implementation of the OpenAPI specification.
  */
-public class SwaggerApiProducer implements ApiProducer<Swagger> {
+public class SwaggerApiProducer implements ApiProducer<OpenAPI> {
 
-    private final List<Scheme> schemes;
     private final String basePath;
     private final Info info;
     private final String host;
+    private final boolean secure;
 
     /**
      * Create a new API Description Producer with {@literal null} as basePath, host and no scheme.
      *
-     * @param info The Swagger {@code Info} instance to add to all OpenAPI descriptors.
+     * @param info The {@code Info} instance to add to all OpenAPI descriptors.
      */
     public SwaggerApiProducer(Info info) {
-        this(info, null, null, Collections.<Scheme> emptyList());
+        this(info, null, null, false);
     }
 
     /**
      * Create a new API Description Producer.
      *
-     * @param info The Swagger {@code Info} instance to add to all OpenAPI descriptors.
+     * @param info The {@code Info} instance to add to all OpenAPI descriptors.
      * @param basePath The base path.
      * @param host The host, if known at construction time, otherwise null.
-     * @param schemes The supported schemes.
+     * @param secure Whether to use HTTPS ({@code true}) or HTTP ({@code false}).
      */
-    public SwaggerApiProducer(Info info, String basePath, String host, Scheme... schemes) {
-        this(info, basePath, host, asList(schemes));
-    }
-
-    /**
-     * Create a new API Description Producer.
-     *
-     * @param info The Swagger {@code Info} instance to add to all OpenAPI descriptors.
-     * @param basePath The base path.
-     * @param host The host, if known at construction time, otherwise null.
-     * @param schemes The supported schemes.
-     */
-    public SwaggerApiProducer(Info info, String basePath, String host, List<Scheme> schemes) {
+    public SwaggerApiProducer(Info info, String basePath, String host, boolean secure) {
         this.info = info;
         this.basePath = basePath;
         this.host = host;
-        this.schemes = new ArrayList<>(schemes);
+        this.secure = secure;
     }
 
     @Override
-    public Swagger withPath(Swagger descriptor, String parentPath) {
+    public OpenAPI withPath(OpenAPI descriptor, String parentPath) {
         return transform(descriptor, new PathTransformer(parentPath));
     }
 
-    private static class PathTransformer implements Function<Map<String, Path>, Map<String, Path>> {
+    private static class PathTransformer implements Function<Map<String, PathItem>, Map<String, PathItem>> {
 
         private final String parentPath;
 
@@ -105,9 +92,9 @@ public class SwaggerApiProducer implements ApiProducer<Swagger> {
         }
 
         @Override
-        public Map<String, Path> apply(Map<String, Path> pathMap) {
-            Map<String, Path> result = new HashMap<>(pathMap.size());
-            for (Map.Entry<String, Path> entry : pathMap.entrySet()) {
+        public Map<String, PathItem> apply(Map<String, PathItem> pathMap) {
+            Map<String, PathItem> result = new HashMap<>(pathMap.size());
+            for (Map.Entry<String, PathItem> entry : pathMap.entrySet()) {
                 String key = entry.getKey();
                 result.put(parentPath + addLeadingSlash(key), entry.getValue());
             }
@@ -117,11 +104,11 @@ public class SwaggerApiProducer implements ApiProducer<Swagger> {
     }
 
     @Override
-    public Swagger withVersion(Swagger descriptor, Version version) {
+    public OpenAPI withVersion(OpenAPI descriptor, Version version) {
         return transform(descriptor, new VersionTransformer(version));
     }
 
-    private static class VersionTransformer implements Function<Map<String, Path>, Map<String, Path>> {
+    private static class VersionTransformer implements Function<Map<String, PathItem>, Map<String, PathItem>> {
 
         public static final String PATH_FRAGMENT_MARKER = "#";
         public static final String PATH_FRAGMENT_COMPONENT_SEPARATOR = "_";
@@ -132,19 +119,21 @@ public class SwaggerApiProducer implements ApiProducer<Swagger> {
         }
 
         @Override
-        public Map<String, Path> apply(Map<String, Path> pathMap) {
-            Map<String, Path> result = new HashMap<>(pathMap.size());
-            for (Map.Entry<String, Path> entry : pathMap.entrySet()) {
+        public Map<String, PathItem> apply(Map<String, PathItem> pathMap) {
+            Map<String, PathItem> result = new HashMap<>(pathMap.size());
+            for (Map.Entry<String, PathItem> entry : pathMap.entrySet()) {
                 String key = entry.getKey();
-                Path path = entry.getValue();
-                HeaderParameter acceptVersionHeader = new HeaderParameter()
+                PathItem pathItem = entry.getValue();
+                Parameter acceptVersionHeader = new Parameter()
+                        .in("header")
                         .name(AcceptApiVersionHeader.NAME)
-                        ._enum(singletonList(AcceptApiVersionHeader.RESOURCE + "=" + version));
-                path.addParameter(acceptVersionHeader);
+                        .schema(new Schema<String>().type("string")
+                                ._enum(singletonList(AcceptApiVersionHeader.RESOURCE + "=" + version)));
+                pathItem.addParametersItem(acceptVersionHeader);
                 if (key.contains(PATH_FRAGMENT_MARKER)) {
-                    result.put(key + PATH_FRAGMENT_COMPONENT_SEPARATOR + version, path);
+                    result.put(key + PATH_FRAGMENT_COMPONENT_SEPARATOR + version, pathItem);
                 } else {
-                    result.put(key + PATH_FRAGMENT_MARKER + version, path);
+                    result.put(key + PATH_FRAGMENT_MARKER + version, pathItem);
                 }
             }
             return result;
@@ -152,68 +141,91 @@ public class SwaggerApiProducer implements ApiProducer<Swagger> {
 
     }
 
-    private Swagger transform(Swagger descriptor, Function<Map<String, Path>,
-            Map<String, Path>> transformer) {
-        Swagger swagger = addApiInfo(SwaggerUtils.clone(descriptor));
-        swagger.setPaths(transformer.apply(descriptor.getPaths()));
-        return swagger;
+    private OpenAPI transform(OpenAPI descriptor, Function<Map<String, PathItem>,
+            Map<String, PathItem>> transformer) {
+        OpenAPI openApi = addApiInfo(SwaggerUtils.clone(descriptor));
+        Paths paths = new Paths();
+        paths.putAll(transformer.apply(descriptor.getPaths()));
+        openApi.setPaths(paths);
+        return openApi;
     }
 
     @Override
-    public Swagger merge(List<Swagger> descriptors) {
+    public OpenAPI merge(List<OpenAPI> descriptors) {
         descriptors = new ArrayList<>(descriptors);
-        descriptors.removeAll(Collections.<Swagger>singletonList(null));
+        descriptors.removeAll(Collections.<OpenAPI>singletonList(null));
         if (descriptors.isEmpty()) {
             return null;
         }
 
-        Swagger swagger = addApiInfo(new SwaggerExtended());
-        for (Swagger descriptor : descriptors) {
-            for (String consumes : ensureNotNull(descriptor.getConsumes())) {
-                swagger.consumes(consumes);
-            }
-            for (String produces : ensureNotNull(descriptor.getProduces())) {
-                swagger.produces(produces);
-            }
+        OpenAPI openApi = addApiInfo(new SwaggerExtended());
+        Components components = openApi.getComponents();
+        if (components == null) {
+            components = new Components();
+            openApi.setComponents(components);
+        }
+        for (OpenAPI descriptor : descriptors) {
             for (Tag tag : ensureNotNull(descriptor.getTags())) {
-                swagger.addTag(tag);
+                openApi.addTagsItem(tag);
             }
-            for (Map.Entry<String, Response> response : ensureNotNull(descriptor.getResponses()).entrySet()) {
-                if (isUndefinedEntry("response", response, swagger.getResponses())) {
-                    swagger.response(response.getKey(), response.getValue());
+            Components srcComponents = descriptor.getComponents();
+            if (srcComponents != null) {
+                for (Map.Entry<String, ApiResponse> response
+                        : ensureNotNull(srcComponents.getResponses()).entrySet()) {
+                    if (isUndefinedEntry("response", response, components.getResponses())) {
+                        components.addResponses(response.getKey(), response.getValue());
+                    }
+                }
+                for (Map.Entry<String, Parameter> parameter
+                        : ensureNotNull(srcComponents.getParameters()).entrySet()) {
+                    if (isUndefinedEntry("parameter", parameter, components.getParameters())) {
+                        components.addParameters(parameter.getKey(), parameter.getValue());
+                    }
+                }
+                for (Map.Entry<String, Object> extension
+                        : ensureNotNull(srcComponents.getExtensions()).entrySet()) {
+                    if (isUndefinedEntry("extension", extension, openApi.getExtensions())) {
+                        openApi.addExtension(extension.getKey(), extension.getValue());
+                    }
+                }
+                for (Map.Entry<String, Schema> definition
+                        : ensureNotNull(srcComponents.getSchemas()).entrySet()) {
+                    if (isUndefinedEntry("definition", definition, components.getSchemas())) {
+                        components.addSchemas(definition.getKey(), definition.getValue());
+                    }
+                }
+                for (Map.Entry<String, SecurityScheme> secDef
+                        : ensureNotNull(srcComponents.getSecuritySchemes()).entrySet()) {
+                    if (isUndefinedEntry("security definition", secDef, components.getSecuritySchemes())) {
+                        components.addSecuritySchemes(secDef.getKey(), secDef.getValue());
+                    }
                 }
             }
-            for (Map.Entry<String, Parameter> parameter : ensureNotNull(descriptor.getParameters()).entrySet()) {
-                if (isUndefinedEntry("parameter", parameter, swagger.getParameters())) {
-                    swagger.addParameter(parameter.getKey(), parameter.getValue());
+            if (descriptor.getExtensions() != null) {
+                for (Map.Entry<String, Object> extension : descriptor.getExtensions().entrySet()) {
+                    if (isUndefinedEntry("extension", extension, openApi.getExtensions())) {
+                        openApi.addExtension(extension.getKey(), extension.getValue());
+                    }
                 }
             }
-            for (Map.Entry<String, Object> extension : ensureNotNull(descriptor.getVendorExtensions()).entrySet()) {
-                if (isUndefinedEntry("extension", extension, swagger.getVendorExtensions())) {
-                    swagger.vendorExtension(extension.getKey(), extension.getValue());
+            Paths descriptorPaths = descriptor.getPaths();
+            if (descriptorPaths != null) {
+                Paths openApiPaths = openApi.getPaths();
+                if (openApiPaths == null) {
+                    openApiPaths = new Paths();
+                    openApi.setPaths(openApiPaths);
                 }
-            }
-            for (Map.Entry<String, Model> definition : ensureNotNull(descriptor.getDefinitions()).entrySet()) {
-                if (isUndefinedEntry("definition", definition, swagger.getDefinitions())) {
-                    swagger.addDefinition(definition.getKey(), definition.getValue());
+                for (Map.Entry<String, PathItem> path : descriptorPaths.entrySet()) {
+                    validatePathNotDefined(path.getKey(),
+                            openApiPaths.keySet());
+                    openApiPaths.addPathItem(path.getKey(), path.getValue());
                 }
-            }
-            for (Map.Entry<String, Path> path : ensureNotNull(descriptor.getPaths()).entrySet()) {
-                validatePathNotDefined(path.getKey(), ensureNotNull(swagger.getPaths()).keySet());
-                swagger.path(path.getKey(), path.getValue());
             }
             for (SecurityRequirement security : ensureNotNull(descriptor.getSecurity())) {
-                swagger.security(security);
-            }
-            Map<String, SecuritySchemeDefinition> schemeDefinitionMap = ensureNotNull(descriptor
-                    .getSecurityDefinitions());
-            for (Map.Entry<String, SecuritySchemeDefinition> secDef : schemeDefinitionMap.entrySet()) {
-                if (isUndefinedEntry("security definition", secDef, swagger.getSecurityDefinitions())) {
-                    swagger.securityDefinition(secDef.getKey(), secDef.getValue());
-                }
+                openApi.addSecurityItem(security);
             }
         }
-        return swagger;
+        return openApi;
     }
 
     private <T> Map<String, T> ensureNotNull(Map<String, T> map) {
@@ -225,11 +237,33 @@ public class SwaggerApiProducer implements ApiProducer<Swagger> {
     }
 
     @Override
-    public Swagger addApiInfo(Swagger swagger) {
+    public OpenAPI addApiInfo(OpenAPI openApi) {
         if (info != null) {
-            swagger.info(info.mergeWith(swagger.getInfo()));
+            Info existingInfo = openApi.getInfo();
+            if (existingInfo == null) {
+                openApi.setInfo(info);
+            } else {
+                // Merge: prefer existing values, fill in from this.info
+                if (existingInfo.getTitle() == null) {
+                    existingInfo.setTitle(info.getTitle());
+                }
+                if (existingInfo.getDescription() == null) {
+                    existingInfo.setDescription(info.getDescription());
+                }
+                if (existingInfo.getVersion() == null) {
+                    existingInfo.setVersion(info.getVersion());
+                }
+            }
         }
-        return swagger.host(host).basePath(basePath).schemes(schemes);
+        if (host != null || basePath != null) {
+            String scheme = secure ? "https" : "http";
+            String serverUrl = scheme + "://" + (host != null ? host : "localhost")
+                    + (basePath != null ? basePath : "");
+            if (openApi.getServers() == null || openApi.getServers().isEmpty()) {
+                openApi.setServers(List.of(new Server().url(serverUrl)));
+            }
+        }
+        return openApi;
     }
 
     private <V> boolean isUndefinedEntry(String entryType, Map.Entry<String, V> entry, Map<String, V> existing) {
@@ -251,7 +285,7 @@ public class SwaggerApiProducer implements ApiProducer<Swagger> {
     }
 
     @Override
-    public ApiProducer<Swagger> newChildProducer(String subPath) {
-        return new SwaggerApiProducer(info, isNullOrEmpty(basePath) ? subPath : basePath + subPath, host, schemes);
+    public ApiProducer<OpenAPI> newChildProducer(String subPath) {
+        return new SwaggerApiProducer(info, isNullOrEmpty(basePath) ? subPath : basePath + subPath, host, secure);
     }
 }

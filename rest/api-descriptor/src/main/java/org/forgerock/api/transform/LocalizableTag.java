@@ -12,23 +12,23 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.api.transform;
-
-import org.forgerock.util.i18n.LocalizableString;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.models.Tag;
+import io.swagger.v3.oas.models.tags.Tag;
+import org.forgerock.util.i18n.LocalizableString;
 
 /**
- * Localizable {@link io.swagger.models.Tag}.
+ * Localizable {@link Tag}.
  */
 public class LocalizableTag extends Tag implements LocalizableDescription<Tag> {
+
     private LocalizableString description;
-    private LocalizableString name;
+
+    private LocalizableString locName;
 
     @Override
     public LocalizableTag description(LocalizableString desc) {
@@ -44,13 +44,20 @@ public class LocalizableTag extends Tag implements LocalizableDescription<Tag> {
 
     @Override
     public void setDescription(String description) {
-        super.setName(description);
+        super.setDescription(description);
         this.description = new LocalizableString(description);
     }
 
     @Override
+    @JsonProperty("description")
     public LocalizableString getLocalizableDescription() {
         return description;
+    }
+
+    @Override
+    @JsonIgnore
+    public String getDescription() {
+        return super.getDescription();
     }
 
     /**
@@ -61,10 +68,16 @@ public class LocalizableTag extends Tag implements LocalizableDescription<Tag> {
      */
     public LocalizableTag name(LocalizableString name) {
         super.setName(name.toString());
-        this.name = name;
+        this.locName = name;
         return this;
     }
 
+    /**
+     * Sets the name of the Tag.
+     *
+     * @param name the tag name
+     * @return the localizable tag
+     */
     @Override
     public LocalizableTag name(String name) {
         setName(name);
@@ -74,7 +87,7 @@ public class LocalizableTag extends Tag implements LocalizableDescription<Tag> {
     @Override
     public void setName(String name) {
         super.setName(name);
-        this.name = new LocalizableString(name);
+        this.locName = new LocalizableString(name);
     }
 
     /**
@@ -84,7 +97,7 @@ public class LocalizableTag extends Tag implements LocalizableDescription<Tag> {
      */
     @JsonProperty("name")
     public LocalizableString getLocalizableName() {
-        return name;
+        return locName;
     }
 
     @Override
@@ -92,4 +105,5 @@ public class LocalizableTag extends Tag implements LocalizableDescription<Tag> {
     public String getName() {
         return super.getName();
     }
+
 }

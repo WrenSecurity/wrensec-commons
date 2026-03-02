@@ -27,7 +27,7 @@ import org.forgerock.util.Factory;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * Provides the Grizzly HTTP library support to the common HTTP Framework.
@@ -114,7 +114,7 @@ public final class GrizzlySupport {
      * @return A Grizzly {@link HttpHandler} ready to be added to an {@link HttpServer}
      */
     public static HttpHandler newGrizzlyHttpHandler(Handler handler, Factory<Buffer> storage,
-            ApiProducer<Swagger> apiProducer) {
+            ApiProducer<OpenAPI> apiProducer) {
         return newGrizzlyHttpHandler(describedHttpApplication(handler, storage, apiProducer));
     }
 

@@ -12,42 +12,17 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.api.transform;
 
-import org.forgerock.util.i18n.LocalizableString;
-
-import io.swagger.models.parameters.QueryParameter;
-
 /**
-
- * Localizable {@link QueryParameter}.
+ * Localizable query parameter.
  */
-class LocalizableQueryParameter extends QueryParameter implements LocalizableSerializableParameter<QueryParameter> {
-    private LocalizableString description;
+class LocalizableQueryParameter extends LocalizableParameter {
 
-    @Override
-    public LocalizableQueryParameter description(LocalizableString desc) {
-        this.description = desc;
-        return this;
-    }
-
-    @Override
-    public LocalizableQueryParameter description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
-    public void setDescription(String description) {
-        super.setDescription(description);
-        this.description = new LocalizableString(description);
-    }
-
-    @Override
-    public LocalizableString getLocalizableDescription() {
-        return description;
+    LocalizableQueryParameter() {
+        setIn("query");
     }
 
 }

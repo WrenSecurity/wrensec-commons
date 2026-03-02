@@ -1,16 +1,10 @@
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: OpenAM Authentication
   description: A useful non-CREST API
   version: "2.0"
-host: openam.example.com:8443
-schemes:
- - https
-basePath: /openam/json
-consumes:
-  - application/json
-produces:
-  - application/json
+servers:
+  - url: https://openam.example.com:8443/openam/json
 paths:
   /authenticate:
     post:
@@ -65,122 +59,131 @@ paths:
             *   `service` - Set the value to the name of an authentication chain.
             *   `user` - Set the value to an OpenAM user ID.
 
-          type: string
-          enum:
-            - composite
-            - level
-            - module
-            - resource
-            - role
-            - service
-            - user
+          schema:
+            type: string
+            enum:
+              - composite
+              - level
+              - module
+              - resource
+              - role
+              - service
+              - user
         - name: authIndexValue
           in: query
           description: A value that corresponds to the `authIndexType`.
-          type: string
+          schema:
+            type: string
         - name: noSession
           in: query
           description: If `true`, authenticate without requesting a session.
-          type: boolean
+          schema:
+            type: boolean
         - name: realm
           in: query
           description: Realm containing the user profile, such as `myRealm`.
-          type: string
+          schema:
+            type: string
         - name: sessionUpgradeSSOTokenID
           in: query
           description: Set this to a previously issued `tokenId` value to request session upgrade.
-          type: string
+          schema:
+            type: string
         - name: X-OpenAM-Username
           in: header
           description: |
             User identifier, such as `demo`.
 
             Use with an empty body and `X-OpenAM-Password` for zero-page login.
-          type: string
+          schema:
+            type: string
         - name: X-OpenAM-Password
           in: header
           description: |
             User password, such as `changeit`.
             Use with an empty body and `X-OpenAM-Username` for zero-page login.
-          type: string
-        - name: body
-          in: body
-          description: >
-            Optional empty JSON object used with `X-OpenAM-Username`
-            and `X-OpenAM-Password` for zero-page login,
-            used without to begin a challenge/response sequence,
-            or a response to a challenge supplied
-            in a previous request to OpenAM.
           schema:
-            type: object
-            properties:
-              authId:
-                type: string
-                description: >
-                  JSON Web Token (JWT) that uniquely identifies
-                  the authentication context to OpenAM,
-                  and so must also be sent back with the requests.
-              template:
-                type: string
-              stage:
-                type: string
-              callbacks:
-                type: array
-                items:
-                  properties:
-                    type:
-                      type: string
-                      description: |
-                        One of the following.
+            type: string
+      requestBody:
+        description: >
+          Optional empty JSON object used with `X-OpenAM-Username`
+          and `X-OpenAM-Password` for zero-page login,
+          used without to begin a challenge/response sequence,
+          or a response to a challenge supplied
+          in a previous request to OpenAM.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                authId:
+                  type: string
+                  description: >
+                    JSON Web Token (JWT) that uniquely identifies
+                    the authentication context to OpenAM,
+                    and so must also be sent back with the requests.
+                template:
+                  type: string
+                stage:
+                  type: string
+                callbacks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        description: |
+                          One of the following.
 
-                          *   `ConfirmationCallback` - Used to ask for a confirmation such as Yes, No, or Cancel and retrieve the selection.
-                          *   `HiddenValueCallback` - Used to return form values that are not visually rendered to the end user.
-                          *   `HttpCallback` - Used for HTTP handshake negotiations.
-                          *   `LanguageCallback` - Used to retrieve the locale for localizing text presented to the end user.
-                          *   `NameCallback` - Used to retrieve a name string.
-                          *   `PasswordCallback` - Used to retrieve a password value.
-                          *   `RedirectCallback` - Used to redirect the client user-agent.
-                          *   `ScriptTextOutputCallback` - Used to insert a script into the page presented to the end user. The script can, for example, collect data about the user's environment.
-                          *   `TextInputCallback` - Used to retrieve text input from the end user.
-                          *   `TextOutputCallback` - Used to display a message to the end user.
-                          *   `X509CertificateCallback` - Used to retrieve the content of an x.509 certificate.
+                            *   `ConfirmationCallback` - Used to ask for a confirmation such as Yes, No, or Cancel and retrieve the selection.
+                            *   `HiddenValueCallback` - Used to return form values that are not visually rendered to the end user.
+                            *   `HttpCallback` - Used for HTTP handshake negotiations.
+                            *   `LanguageCallback` - Used to retrieve the locale for localizing text presented to the end user.
+                            *   `NameCallback` - Used to retrieve a name string.
+                            *   `PasswordCallback` - Used to retrieve a password value.
+                            *   `RedirectCallback` - Used to redirect the client user-agent.
+                            *   `ScriptTextOutputCallback` - Used to insert a script into the page presented to the end user. The script can, for example, collect data about the user's environment.
+                            *   `TextInputCallback` - Used to retrieve text input from the end user.
+                            *   `TextOutputCallback` - Used to display a message to the end user.
+                            *   `X509CertificateCallback` - Used to retrieve the content of an x.509 certificate.
 
-                      enum:
-                        - ChoiceCallback
-                        - ConfirmationCallback
-                        - HiddenValueCallback
-                        - HttpCallback
-                        - LanguageCallback
-                        - NameCallback
-                        - PasswordCallback
-                        - RedirectCallback
-                        - ScriptTextOutputCallback
-                        - TextInputCallback
-                        - TextOutputCallback
-                        - X509CertificateCallback
-                    output:
-                      description: Name-value pairs of output to format and display to the user
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          name:
-                            type: string
-                            description: A `prompt` text to display to the user
-                          value:
-                            type: string
-                            description: A `prompt` text
-                    input:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          name:
-                            type: string
-                            description: A variable name to populate in the response
-                          value:
-                            type: string
-                            description: Populate this with the user's response
+                        enum:
+                          - ChoiceCallback
+                          - ConfirmationCallback
+                          - HiddenValueCallback
+                          - HttpCallback
+                          - LanguageCallback
+                          - NameCallback
+                          - PasswordCallback
+                          - RedirectCallback
+                          - ScriptTextOutputCallback
+                          - TextInputCallback
+                          - TextOutputCallback
+                          - X509CertificateCallback
+                      output:
+                        description: Name-value pairs of output to format and display to the user
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: A `prompt` text to display to the user
+                            value:
+                              type: string
+                              description: A `prompt` text
+                      input:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: A variable name to populate in the response
+                            value:
+                              type: string
+                              description: Populate this with the user's response
       responses:
         200:
           description: |
@@ -194,36 +197,39 @@ paths:
             it is _not_ necessary to insert login credentials
             in the HTTP header in subsequent REST API calls.
 
-          schema:
-            type: object
-            properties:
-              tokenId:
-                type: string
-                description: SSO token, not returned when `noSession` is set to `true`.
-              message:
-                type: string
-                description: Result message
-              successUrl:
-                type: string
-                description: Location to redirect the user-agent
-          examples:
+          content:
             application/json:
-              tokenId: AQIC5w...NTcy*
-              successUrl: /openam/console
+              schema:
+                type: object
+                properties:
+                  tokenId:
+                    type: string
+                    description: SSO token, not returned when `noSession` is set to `true`.
+                  message:
+                    type: string
+                    description: Result message
+                  successUrl:
+                    type: string
+                    description: Location to redirect the user-agent
+              example:
+                tokenId: AQIC5w...NTcy*
+                successUrl: /openam/console
         401:
           description: Failed authentication
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                description: HTTP status code (`401`)
-              reason:
-                type: string
-                description: HTTP status reason (`Unauthorized`)
-              message:
-                type: string
-                description: Additional information about the failure
-              failureUrl:
-                type: string
-                description: Location to redirect the user-agent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: HTTP status code (`401`)
+                  reason:
+                    type: string
+                    description: HTTP status reason (`Unauthorized`)
+                  message:
+                    type: string
+                    description: Additional information about the failure
+                  failureUrl:
+                    type: string
+                    description: Location to redirect the user-agent

@@ -33,7 +33,11 @@
 
     <servlet>
         <servlet-name>OpenAPIAssetsServlet</servlet-name>
-        <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+        <servlet-class>org.eclipse.jetty.ee11.servlet.ResourceServlet</servlet-class>
+        <init-param>
+            <param-name>pathInfoOnly</param-name>
+            <param-value>false</param-value>
+        </init-param>
     </servlet>
 
     <servlet-mapping>

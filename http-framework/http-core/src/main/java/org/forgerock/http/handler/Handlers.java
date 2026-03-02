@@ -13,7 +13,6 @@
  *
  * Copyright 2015-2016 ForgeRock AS.
  */
-
 package org.forgerock.http.handler;
 
 import static org.forgerock.http.protocol.Response.newResponsePromise;
@@ -33,7 +32,7 @@ import org.forgerock.services.descriptor.Describable;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * Utility methods for creating common types of handlers.
@@ -54,7 +53,7 @@ public final class Handlers {
      * @return a new {@link Handler} instance that filters the given {@code handler}.
      */
     public static DescribableHandler filtered(final Handler handler, final Filter filter) {
-        final Describable<Swagger, Request> describable = asDescribableHandler(handler);
+        final Describable<OpenAPI, Request> describable = asDescribableHandler(handler);
         return new DescribableHandler() {
             @Override
             public Promise<Response, NeverThrowsException> handle(final Context context, final Request request) {
@@ -62,12 +61,12 @@ public final class Handlers {
             }
 
             @Override
-            public Swagger api(ApiProducer<Swagger> producer) {
+            public OpenAPI api(ApiProducer<OpenAPI> producer) {
                 return describable.api(producer);
             }
 
             @Override
-            public Swagger handleApiRequest(Context context, Request request) {
+            public OpenAPI handleApiRequest(Context context, Request request) {
                 return describable.handleApiRequest(context, request);
             }
 
@@ -135,16 +134,16 @@ public final class Handlers {
             return (DescribableHandler) handler;
         }
         if (handler instanceof Describable) {
-            return new HandlerDescribableAsDescribableHandler(handler, (Describable<Swagger, Request>) handler);
+            return new HandlerDescribableAsDescribableHandler(handler, (Describable<OpenAPI, Request>) handler);
         }
         return new UndescribedAsDescribableHandler(handler);
     }
 
     private static class HandlerDescribableAsDescribableHandler implements DescribableHandler {
         private final Handler handler;
-        private final Describable<Swagger, Request> describable;
+        private final Describable<OpenAPI, Request> describable;
 
-        public HandlerDescribableAsDescribableHandler(Handler handler, Describable<Swagger, Request> describable) {
+        public HandlerDescribableAsDescribableHandler(Handler handler, Describable<OpenAPI, Request> describable) {
             this.handler = handler;
             this.describable = describable;
         }
@@ -155,12 +154,12 @@ public final class Handlers {
         }
 
         @Override
-        public Swagger api(ApiProducer<Swagger> producer) {
+        public OpenAPI api(ApiProducer<OpenAPI> producer) {
             return describable.api(producer);
         }
 
         @Override
-        public Swagger handleApiRequest(Context context, Request request) {
+        public OpenAPI handleApiRequest(Context context, Request request) {
             return describable.handleApiRequest(context, request);
         }
 
@@ -188,12 +187,12 @@ public final class Handlers {
         }
 
         @Override
-        public Swagger api(ApiProducer<Swagger> producer) {
+        public OpenAPI api(ApiProducer<OpenAPI> producer) {
             return null;
         }
 
         @Override
-        public Swagger handleApiRequest(Context context, Request request) {
+        public OpenAPI handleApiRequest(Context context, Request request) {
             throw new UnsupportedOperationException("Handler is not describable");
         }
 

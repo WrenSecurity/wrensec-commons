@@ -45,8 +45,8 @@ import org.forgerock.util.promise.Promise;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
-import io.swagger.models.Swagger;
-import io.swagger.util.DeserializationModule;
+import io.swagger.v3.core.util.DeserializationModule31;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * A described CHF Handler that implements a crude OAuth 2.0 AS. Exposes the following endpoints:
@@ -59,13 +59,13 @@ import io.swagger.util.DeserializationModule;
  */
 public class DescribedOauth2Endpoint implements DescribableHandler {
 
-    private static final Swagger DESCRIPTOR;
+    private static final OpenAPI DESCRIPTOR;
 
     static {
         try {
-            DESCRIPTOR = new ObjectMapper(new YAMLFactory()).registerModule(new DeserializationModule()).readValue(
+            DESCRIPTOR = new ObjectMapper(new YAMLFactory()).registerModule(new DeserializationModule31()).readValue(
                     DescribedOauth2Endpoint.class.getResourceAsStream("DescribedOAuth2Endpoint.openapi.yaml"),
-                    Swagger.class);
+                    OpenAPI.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -74,7 +74,7 @@ public class DescribedOauth2Endpoint implements DescribableHandler {
     private final Map<String, JsonValue> userCodes = new HashMap<>();
     private final Map<String, String> userTokens = new HashMap<>();
     private final Router router;
-    private Swagger descriptor;
+    private OpenAPI descriptor;
 
     /**
      * Create the endpoint.
@@ -211,13 +211,13 @@ public class DescribedOauth2Endpoint implements DescribableHandler {
     }
 
     @Override
-    public Swagger api(ApiProducer<Swagger> producer) {
+    public OpenAPI api(ApiProducer<OpenAPI> producer) {
         descriptor = producer.addApiInfo(DESCRIPTOR);
         return descriptor;
     }
 
     @Override
-    public Swagger handleApiRequest(Context context, Request request) {
+    public OpenAPI handleApiRequest(Context context, Request request) {
         return descriptor;
     }
 

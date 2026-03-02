@@ -12,35 +12,65 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 package org.forgerock.http.swagger;
 
-import io.swagger.models.Swagger;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 
 /** Swagger utility. */
 public final class SwaggerUtils {
 
     /**
-     * Clone a {@code Swagger} instance.
+     * Clone an {@code OpenAPI} instance.
      * @param descriptor The instance to clone.
      * @return The newly cloned instance.
      */
-    public static Swagger clone(Swagger descriptor) {
-        Swagger swagger = new SwaggerExtended()
-                .basePath(descriptor.getBasePath())
-                .consumes(descriptor.getConsumes())
-                .info(descriptor.getInfo())
-                .produces(descriptor.getProduces())
-                .responses(descriptor.getResponses())
-                .schemes(descriptor.getSchemes())
-                .tags(descriptor.getTags())
-                .vendorExtensions(descriptor.getVendorExtensions());
-        swagger.setDefinitions(descriptor.getDefinitions());
-        swagger.setPaths(descriptor.getPaths());
-        swagger.setSecurity(descriptor.getSecurity());
-        swagger.setParameters(descriptor.getParameters());
-        swagger.setSecurityDefinitions(descriptor.getSecurityDefinitions());
-        return swagger;
+    public static OpenAPI clone(OpenAPI descriptor) {
+        OpenAPI openApi = new SwaggerExtended();
+        openApi.setInfo(descriptor.getInfo());
+        openApi.setTags(descriptor.getTags() != null ? new ArrayList<>(descriptor.getTags()) : null);
+        openApi.setExtensions(descriptor.getExtensions());
+        if (descriptor.getServers() != null) {
+            openApi.setServers(new ArrayList<>(descriptor.getServers()));
+        }
+        if (descriptor.getPaths() != null) {
+            Paths paths = new Paths();
+            paths.putAll(descriptor.getPaths());
+            openApi.setPaths(paths);
+        }
+        if (descriptor.getSecurity() != null) {
+            openApi.setSecurity(new ArrayList<>(descriptor.getSecurity()));
+        }
+        if (descriptor.getComponents() != null) {
+            Components src = descriptor.getComponents();
+            Components dest = new Components();
+            if (src.getSchemas() != null) {
+                dest.setSchemas(new LinkedHashMap<>(src.getSchemas()));
+            }
+            if (src.getParameters() != null) {
+                dest.setParameters(new LinkedHashMap<>(src.getParameters()));
+            }
+            if (src.getResponses() != null) {
+                dest.setResponses(new LinkedHashMap<>(src.getResponses()));
+            }
+            if (src.getSecuritySchemes() != null) {
+                dest.setSecuritySchemes(new LinkedHashMap<>(src.getSecuritySchemes()));
+            }
+            openApi.setComponents(dest);
+        }
+        return openApi;
     }
 
     private SwaggerUtils() {

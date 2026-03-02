@@ -13,13 +13,36 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.jackson;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.forgerock.api.jackson.JacksonUtils.OBJECT_MAPPER;
 import static org.forgerock.api.util.ValidationUtil.isEmpty;
 
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import com.fasterxml.jackson.databind.type.SimpleType;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.ObjectVisitor;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.ObjectVisitorDecorator;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.SchemaFactoryWrapper;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.VisitorContext;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.WrapperFactory;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ArraySchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.NumberSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.SimpleTypeSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.StringSchema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
@@ -29,15 +52,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
+import org.forgerock.api.annotations.AdditionalProperties;
 import org.forgerock.api.annotations.Default;
 import org.forgerock.api.annotations.Description;
 import org.forgerock.api.annotations.EnumTitle;
@@ -51,25 +66,6 @@ import org.forgerock.api.annotations.Title;
 import org.forgerock.api.annotations.UniqueItems;
 import org.forgerock.api.enums.WritePolicy;
 import org.wrensecurity.guava.common.io.Resources;
-
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
-import com.fasterxml.jackson.databind.type.SimpleType;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.factories.ObjectVisitor;
-import com.fasterxml.jackson.module.jsonSchema.factories.ObjectVisitorDecorator;
-import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-import com.fasterxml.jackson.module.jsonSchema.factories.VisitorContext;
-import com.fasterxml.jackson.module.jsonSchema.factories.WrapperFactory;
-import com.fasterxml.jackson.module.jsonSchema.types.ArraySchema;
-import com.fasterxml.jackson.module.jsonSchema.types.NumberSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.SimpleTypeSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.StringSchema;
-import org.forgerock.api.annotations.AdditionalProperties;
 
 /**
  * A {@code SchemaFactoryWrapper} that adds the extra CREST schema attributes once the Jackson schema generation has

@@ -13,26 +13,22 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.jackson;
 
 import static org.forgerock.api.jackson.JacksonUtils.OBJECT_MAPPER;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ArraySchema;
+import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.validation.ValidationException;
-
 import org.forgerock.api.enums.ReadPolicy;
-import org.forgerock.json.JsonValue;
-
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.ArraySchema;
 import org.forgerock.api.enums.WritePolicy;
+import org.forgerock.json.JsonValue;
 
 /**
  * An extension to the Jackson {@code ArraySchema} that includes the custom CREST JSON Schema attributes.

@@ -16,9 +16,8 @@
 
 package org.forgerock.api.jackson;
 
-import javax.validation.ValidationException;
-
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import jakarta.validation.ValidationException;
 import org.forgerock.json.JsonValue;
 
 /**
