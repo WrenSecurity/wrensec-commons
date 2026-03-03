@@ -32,7 +32,6 @@ The modules of Wren Security Commons include:
 | **audit** | Audit logging framework with multiple handlers (CSV, Syslog, JMS, JDBC, JSON, Elasticsearch, Splunk) |
 | **auth-filters** | Authentication and authorization filters (JASPI runtime, authn-filter, authz-filter) |
 | **bloomfilter** | Thread-safe Bloom Filter implementations (scalable and rolling) |
-| **doc-maven** | Maven plugins and tooling for documentation generation |
 | **guice** | Shaded Google Guice dependency (core, servlet, test) |
 | **http-framework** | Uniform client/server HTTP API with adapters (Servlet, Apache HTTP, Grizzly, OAuth2) |
 | **i18n** | Internationalization framework with Maven plugin and logging integration |
