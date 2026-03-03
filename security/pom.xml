@@ -26,8 +26,8 @@
 
     <artifactId>security</artifactId>
 
-    <name>Wren Security Commons JSON Patch - Library</name>
-    <description>Wren Security JSON Patch project</description>
+    <name>Forgerock Commons - Security</name>
+    <description>Common instantiation and handling of keystores</description>
 
     <dependencies>
         <dependency>
