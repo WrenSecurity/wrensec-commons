@@ -34,10 +34,6 @@
         documentation generators, live documentation websites, and other tooling.
     </description>
 
-    <properties>
-        <rhino.version>1.7.13</rhino.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -94,8 +90,8 @@
 
         <dependency>
             <groupId>org.mozilla</groupId>
-            <artifactId>rhino</artifactId>
-            <version>${rhino.version}</version>
+            <artifactId>rhino-engine</artifactId>
+            <version>1.9.1</version>
             <scope>test</scope>
         </dependency>
 
