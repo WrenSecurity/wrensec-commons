@@ -1,9 +1,9 @@
 # openapi-war-overlay
 
-This module contains static HTML/JS/CSS for
-[Swagger UI](https://github.com/swagger-api/swagger-ui), which can be included
-in a Servlet-based application as a WAR overlay. All assets will be copied to
-the `/src/main/webapp/openapi/` directory during a Maven build.
+This module packages [Swagger UI](https://github.com/swagger-api/swagger-ui)
+assets as a WAR overlay. The Swagger UI distribution is pulled from the
+`org.webjars:swagger-ui` WebJar at build time — version upgrades are a
+one-line change to the `swagger-ui.version` property in `pom.xml`.
 
 ## Maven
 
@@ -57,7 +57,11 @@ assets available via HTTP,
 ```
 <servlet>
     <servlet-name>OpenAPIAssetsServlet</servlet-name>
-    <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+    <servlet-class>org.eclipse.jetty.ee11.servlet.ResourceServlet</servlet-class>
+    <init-param>
+        <param-name>pathInfoOnly</param-name>
+        <param-value>false</param-value>
+    </init-param>
 </servlet>
 
 <servlet-mapping>
@@ -66,33 +70,17 @@ assets available via HTTP,
 </servlet-mapping>
 ```
 
-## Swagger UI
-
-The current version of [Swagger UI](https://github.com/swagger-api/swagger-ui) in this module is **2.1.4**.
-
-We had to make minor modifications to `swagger-ui.js` in order to remove URL fragments prior
-to executing HTTP requests. We changed,
+Keep in mind that the `ResourceServlet` has to be made available via jetty-web.xml:
 
 ```
-Operation.prototype.urlify = function (args) {
-  var formParams = {};
-  var requestUrl = this.path;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://eclipse.dev/jetty/configure_12.dtd">
+<Configure class="org.eclipse.jetty.ee11.webapp.WebAppContext">
+    <!-- Expose Jetty servlet classes to be usable in web.xml (e.g. ResourceServlet). -->
+    <Get name="hiddenClassMatcher">
+        <Call name="exclude">
+            <Arg>org.eclipse.jetty.ee11.servlet.</Arg>
+        </Call>
+    </Get>
+</Configure>
 ```
-
-to,
-
-```
-Operation.prototype.urlify = function (args) {
-  var formParams = {};
-  var requestUrl = this.path.replace(/#.*/, '');
-```
-
-## CSS Theme
-
-The Swagger UI theme CSS file at,
-
-```
-/src/main/webapp/openapi/themes/theme-flattop.css
-```
-
-was downloaded from [github.com/ostranme/swagger-ui-themes](https://github.com/ostranme/swagger-ui-themes).

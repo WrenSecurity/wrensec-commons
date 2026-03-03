@@ -12,42 +12,17 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.api.transform;
 
-import org.forgerock.util.i18n.LocalizableString;
-
-import io.swagger.models.parameters.HeaderParameter;
-
 /**
-
- * Localizable {@link HeaderParameter}.
+ * Localizable header parameter.
  */
-class LocalizableHeaderParameter extends HeaderParameter
-        implements LocalizableSerializableParameter<HeaderParameter> {
-    private LocalizableString description;
+class LocalizableHeaderParameter extends LocalizableParameter {
 
-    @Override
-    public LocalizableHeaderParameter description(LocalizableString desc) {
-        this.description = desc;
-        return this;
+    LocalizableHeaderParameter() {
+        setIn("header");
     }
 
-    @Override
-    public LocalizableHeaderParameter description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
-    public void setDescription(String description) {
-        super.setDescription(description);
-        this.description = new LocalizableString(description);
-    }
-
-    @Override
-    public LocalizableString getLocalizableDescription() {
-        return description;
-    }
 }

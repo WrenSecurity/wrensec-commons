@@ -12,7 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
- * Portions Copyright 2018-2023 Wren Security.
+ * Portions Copyright 2018-2026 Wren Security.
  */
 
 package org.forgerock.api.jackson;
@@ -24,11 +24,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import io.swagger.util.ReferenceSerializationConfigurer;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.util.Set;
-import javax.validation.ValidationException;
 import org.forgerock.http.util.Json;
 
 /**
@@ -39,7 +38,7 @@ public final class JacksonUtils {
      * A public static {@code ObjectMapper} instance, so that they do not have to be instantiated
      * all over the place, as they are expensive to construct.
      */
-    public static final ObjectMapper OBJECT_MAPPER = io.swagger.util.Json.mapper()
+    public static final ObjectMapper OBJECT_MAPPER = io.swagger.v3.core.util.Json.mapper()
             .registerModules(new Json.LocalizableStringModule(), new Json.JsonValueModule());
 
     /**
@@ -47,25 +46,20 @@ public final class JacksonUtils {
      * documentation and tests.
      *
      * <p>The new mapper is configured separately from the mapper used by {@link #OBJECT_MAPPER};
-     * it does not include any of the normal customizations for Swagger except for elimination of
-     * the {@code originalRef} property. This ensures that the JSON output is a reliable
-     * representation of each object, without any of the tweaks that are normally needed for
-     * Swagger output.
+     * it does not include any of the normal customizations for OpenAPI. This ensures that the
+     * JSON output is a reliable representation of each object, without any of the tweaks that
+     * are normally needed for OpenAPI output.
      *
      * @return
      *  A Jackson {@code ObjectMapper} that can generically handle most POJOs and localize-able
      *  strings.
      */
     public static ObjectMapper createGenericMapper() {
-        final ObjectMapper mapper = new ObjectMapper()
+        return new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .enable(SerializationFeature.INDENT_OUTPUT)
                 .registerModules(new Json.LocalizableStringModule(), new Json.JsonValueModule());
-
-        ReferenceSerializationConfigurer.serializeAsComputedRef(mapper);
-
-        return mapper;
     }
 
     /**

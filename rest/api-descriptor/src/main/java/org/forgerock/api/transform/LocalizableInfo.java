@@ -12,31 +12,32 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.api.transform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.models.info.Info;
 import org.forgerock.util.i18n.LocalizableString;
-
-import io.swagger.models.Info;
 
 /**
  * A localizable {@code Info}.
  */
 class LocalizableInfo extends Info implements LocalizableTitleAndDescription<Info> {
 
-    private LocalizableString title;
-    private LocalizableString description;
+    private LocalizableString locTitle;
+    private LocalizableString locDescription;
 
     @Override
     public LocalizableInfo title(LocalizableString title) {
-        this.title = title;
+        this.locTitle = title;
         return this;
     }
 
     @Override
     public LocalizableInfo description(LocalizableString description) {
-        this.description = description;
+        this.locDescription = description;
         return this;
     }
 
@@ -49,7 +50,7 @@ class LocalizableInfo extends Info implements LocalizableTitleAndDescription<Inf
     @Override
     public void setTitle(String title) {
         super.setTitle(title);
-        this.title = new LocalizableString(title);
+        this.locTitle = new LocalizableString(title);
     }
 
     @Override
@@ -61,37 +62,63 @@ class LocalizableInfo extends Info implements LocalizableTitleAndDescription<Inf
     @Override
     public void setDescription(String description) {
         super.setDescription(description);
-        this.description = new LocalizableString(description);
+        this.locDescription = new LocalizableString(description);
     }
 
     @Override
+    @JsonProperty("title")
     public LocalizableString getLocalizableTitle() {
-        return title;
+        return locTitle;
     }
 
     @Override
+    @JsonProperty("description")
     public LocalizableString getLocalizableDescription() {
-        return description;
+        return locDescription;
     }
 
     @Override
+    @JsonIgnore
+    public String getTitle() {
+        return super.getTitle();
+    }
+
+    @Override
+    @JsonIgnore
+    public String getDescription() {
+        return super.getDescription();
+    }
+
+    /**
+     * Merge another Info's values into this one (existing values take precedence).
+     *
+     * @param info The info to merge.
+     * @return This info.
+     */
     public LocalizableInfo mergeWith(Info info) {
-        super.mergeWith(info);
+        if (info == null) {
+            return this;
+        }
         if (info instanceof LocalizableInfo) {
             LocalizableInfo localizableInfo = (LocalizableInfo) info;
-            if (localizableInfo.description != null) {
-                this.description = localizableInfo.description;
+            if (localizableInfo.locDescription != null && this.locDescription == null) {
+                this.locDescription = localizableInfo.locDescription;
+                super.setDescription(localizableInfo.getDescription());
             }
-            if (localizableInfo.title != null) {
-                this.title = localizableInfo.title;
+            if (localizableInfo.locTitle != null && this.locTitle == null) {
+                this.locTitle = localizableInfo.locTitle;
+                super.setTitle(localizableInfo.getTitle());
             }
         } else {
-            if (info.getDescription() != null) {
+            if (info.getDescription() != null && getDescription() == null) {
                 description(info.getDescription());
             }
-            if (info.getTitle() != null) {
+            if (info.getTitle() != null && getTitle() == null) {
                 title(info.getTitle());
             }
+        }
+        if (info.getVersion() != null && getVersion() == null) {
+            setVersion(info.getVersion());
         }
         return this;
     }

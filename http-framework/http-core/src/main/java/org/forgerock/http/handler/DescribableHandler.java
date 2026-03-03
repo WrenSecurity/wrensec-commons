@@ -20,12 +20,12 @@ import org.forgerock.http.Handler;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.services.descriptor.Describable;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * A handler that both handles {@link Request}s, and also supports querying for API Descriptors.
  * @see Handler
  * @see Describable
  */
-public interface DescribableHandler extends Handler, Describable<Swagger, Request> {
+public interface DescribableHandler extends Handler, Describable<OpenAPI, Request> {
 }

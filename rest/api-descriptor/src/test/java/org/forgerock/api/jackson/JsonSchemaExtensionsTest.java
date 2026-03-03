@@ -24,21 +24,20 @@ import static org.forgerock.json.test.assertj.AssertJJsonValueAssert.assertThat;
 import static org.forgerock.util.Reject.checkNotNull;
 import static org.forgerock.util.test.assertj.Conditions.equalTo;
 
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
 import org.assertj.core.data.MapEntry;
 import org.forgerock.api.annotations.AdditionalProperties;
 import org.forgerock.api.annotations.Default;
@@ -58,8 +57,6 @@ import org.forgerock.json.JsonValue;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 
 public class JsonSchemaExtensionsTest {
 
@@ -121,7 +118,8 @@ public class JsonSchemaExtensionsTest {
                 {hasNumericSchema, "myLong", entry("maximum", Long.MAX_VALUE)},
                 {hasNumericSchema, "myDouble", entry("format", "double")},
                 {hasNumericSchema, "myDouble", entry("minimum", Double.MIN_VALUE)},
-                {hasNumericSchema, "myDouble", entry("maximum", Double.MAX_VALUE)},
+                {hasNumericSchema, "myDouble", entry("maximum",
+                        new BigDecimal("1.7976931348623157E308").toBigInteger())},
                 {hasNumericSchema, "myFloat", entry("format", "float")},
 
                 // NOTE: SerializationFeature.WRITE_DATES_AS_TIMESTAMPS must be disabled on Jackson ObjectMapper

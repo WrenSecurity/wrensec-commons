@@ -12,26 +12,24 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.api.transform;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.forgerock.util.i18n.LocalizableString;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.models.Operation;
+import io.swagger.v3.oas.models.Operation;
+import java.util.ArrayList;
+import java.util.List;
+import org.forgerock.util.i18n.LocalizableString;
 
 /**
  * Localizable {@link Operation}.
  */
 public class LocalizableOperation extends Operation implements LocalizableDescription<Operation> {
+
     private LocalizableString description;
-    private List<LocalizableString> tags;
+    private List<LocalizableString> localizableTags;
 
     @Override
     public LocalizableOperation description(LocalizableString desc) {
@@ -52,14 +50,22 @@ public class LocalizableOperation extends Operation implements LocalizableDescri
     }
 
     @Override
+    @JsonProperty("description")
     public LocalizableString getLocalizableDescription() {
         return description;
     }
 
     @Override
-    public void addTag(String tag) {
-        super.addTag(tag);
+    @JsonIgnore
+    public String getDescription() {
+        return super.getDescription();
+    }
+
+    @Override
+    public Operation addTagsItem(String tag) {
+        super.addTagsItem(tag);
         addTag(new LocalizableString(tag));
+        return this;
     }
 
     /**
@@ -67,18 +73,20 @@ public class LocalizableOperation extends Operation implements LocalizableDescri
      * @param tag a LocalizableString
      */
     public void addTag(LocalizableString tag) {
-        if (tags == null) {
-            tags = new ArrayList<>();
+        if (localizableTags == null) {
+            localizableTags = new ArrayList<>();
         }
-        tags.add(tag);
+        localizableTags.add(tag);
     }
 
     @Override
     public void setTags(List<String> tags) {
         super.setTags(tags);
-        tags = new ArrayList<>();
-        for (String tag : tags) {
-            addTag(tag);
+        localizableTags = new ArrayList<>();
+        if (tags != null) {
+            for (String tag : tags) {
+                addTag(new LocalizableString(tag));
+            }
         }
     }
 
@@ -89,7 +97,7 @@ public class LocalizableOperation extends Operation implements LocalizableDescri
      */
     @JsonProperty("tags")
     public List<LocalizableString> getLocalizableTags() {
-        return tags;
+        return localizableTags;
     }
 
     @Override
@@ -97,4 +105,15 @@ public class LocalizableOperation extends Operation implements LocalizableDescri
     public List<String> getTags() {
         return super.getTags();
     }
+
+    /**
+     * Sets a vendor extension on this operation.
+     *
+     * @param name Extension name (must start with "x-").
+     * @param value Extension value.
+     */
+    public void setVendorExtension(String name, Object value) {
+        addExtension(name, value);
+    }
+
 }

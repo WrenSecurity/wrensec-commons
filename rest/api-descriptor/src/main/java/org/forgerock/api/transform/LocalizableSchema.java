@@ -11,39 +11,41 @@
  * Header, with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions copyright [year] [name of copyright owner]".
  *
- * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.api.transform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Objects;
-
 import org.forgerock.util.i18n.LocalizableString;
 
-import io.swagger.models.properties.Property;
-import io.swagger.models.properties.StringProperty;
-
 /**
- * Localizable {@link StringProperty}.
+ * Localizable {@link Schema} that replaces all previous Localizable property and model types.
+ * In OpenAPI 3.0, the unified Schema class replaces the separate Property and Model hierarchies.
  */
-class LocalizableStringProperty extends StringProperty implements LocalizableProperty<Property> {
-    private LocalizableString title;
-    private LocalizableString description;
+@SuppressWarnings("rawtypes")
+class LocalizableSchema extends Schema implements LocalizableTitleAndDescription<Schema> {
+
+    private LocalizableString locTitle;
+
+    private LocalizableString locDescription;
 
     @Override
-    public LocalizableStringProperty title(LocalizableString title) {
-        this.title = title;
+    public Schema title(LocalizableString title) {
+        this.locTitle = title;
         return this;
     }
 
     @Override
-    public LocalizableStringProperty description(LocalizableString desc) {
-        this.description = desc;
+    public Schema description(LocalizableString desc) {
+        this.locDescription = desc;
         return this;
     }
 
     @Override
-    public LocalizableStringProperty title(String title) {
+    public Schema title(String title) {
         setTitle(title);
         return this;
     }
@@ -51,11 +53,11 @@ class LocalizableStringProperty extends StringProperty implements LocalizablePro
     @Override
     public void setTitle(String title) {
         super.setTitle(title);
-        this.title = new LocalizableString(title);
+        this.locTitle = new LocalizableString(title);
     }
 
     @Override
-    public LocalizableStringProperty description(String description) {
+    public Schema description(String description) {
         setDescription(description);
         return this;
     }
@@ -63,17 +65,31 @@ class LocalizableStringProperty extends StringProperty implements LocalizablePro
     @Override
     public void setDescription(String description) {
         super.setDescription(description);
-        this.description = new LocalizableString(description);
+        this.locDescription = new LocalizableString(description);
     }
 
     @Override
+    @JsonProperty("title")
     public LocalizableString getLocalizableTitle() {
-        return title;
+        return locTitle;
     }
 
     @Override
+    @JsonProperty("description")
     public LocalizableString getLocalizableDescription() {
-        return description;
+        return locDescription;
+    }
+
+    @Override
+    @JsonIgnore
+    public String getTitle() {
+        return super.getTitle();
+    }
+
+    @Override
+    @JsonIgnore
+    public String getDescription() {
+        return super.getDescription();
     }
 
     @Override
@@ -81,14 +97,14 @@ class LocalizableStringProperty extends StringProperty implements LocalizablePro
         if (!super.equals(o)) {
             return false;
         }
-        if (!(o instanceof LocalizableStringProperty)) {
+        if (!(o instanceof LocalizableSchema)) {
             return false;
         }
-        final LocalizableStringProperty other = (LocalizableStringProperty) o;
-        if (!Objects.equals(title, other.title)) {
+        final LocalizableSchema other = (LocalizableSchema) o;
+        if (!Objects.equals(locTitle, other.locTitle)) {
             return false;
         }
-        if (!Objects.equals(description, other.description)) {
+        if (!Objects.equals(locDescription, other.locDescription)) {
             return false;
         }
         return true;
@@ -96,7 +112,7 @@ class LocalizableStringProperty extends StringProperty implements LocalizablePro
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), title, description);
+        return Objects.hash(super.hashCode(), locTitle, locDescription);
     }
 
 }

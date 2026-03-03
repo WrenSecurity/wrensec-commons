@@ -13,18 +13,19 @@
  *
  * Copyright 2015-2016 ForgeRock AS.
  */
-
 package org.forgerock.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.SchemaFactoryWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import org.forgerock.audit.handlers.csv.CsvAuditEventHandlerConfiguration;
 import org.forgerock.audit.handlers.elasticsearch.ElasticsearchAuditEventHandlerConfiguration;
 import org.forgerock.audit.handlers.jdbc.JdbcAuditEventHandlerConfiguration;
@@ -36,10 +37,6 @@ import org.forgerock.json.JsonValue;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 @SuppressWarnings("javadoc")
 /**
@@ -58,7 +55,7 @@ public class TranslationPropertiesTest {
     @SuppressWarnings("unchecked")
     @BeforeMethod
     protected void setUp() throws IOException {
-        translationKeys = (Set<String>) (Set) loadTranslations().keySet();
+        translationKeys = (Set) loadTranslations().keySet();
     }
 
     @DataProvider

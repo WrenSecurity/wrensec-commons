@@ -13,25 +13,23 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.api.jackson;
 
-import static org.forgerock.api.jackson.JacksonUtils.*;
+import static org.forgerock.api.jackson.JacksonUtils.validateEnum;
+import static org.forgerock.api.jackson.JacksonUtils.validateFormatForNumber;
+import static org.forgerock.api.jackson.JacksonUtils.validateMaximumAndMinimum;
 import static org.forgerock.api.util.ValidationUtil.isEmpty;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.types.NumberSchema;
+import jakarta.validation.ValidationException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import javax.validation.ValidationException;
-
 import org.forgerock.api.enums.ReadPolicy;
-import org.forgerock.json.JsonValue;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.module.jsonSchema.types.NumberSchema;
 import org.forgerock.api.enums.WritePolicy;
+import org.forgerock.json.JsonValue;
 
 /**
  * An extension to the Jackson {@code NumberSchema} that includes the custom CREST JSON Schema attributes.

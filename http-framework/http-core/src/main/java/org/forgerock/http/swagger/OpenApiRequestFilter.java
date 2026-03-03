@@ -12,8 +12,8 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016-2017 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
-
 package org.forgerock.http.swagger;
 
 import static org.forgerock.http.protocol.Entity.APPLICATION_JSON_CHARSET_UTF_8;
@@ -21,8 +21,15 @@ import static org.forgerock.http.protocol.Response.newResponsePromise;
 import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.protocol.Responses.newNotFound;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.servers.Server;
 import java.net.URI;
-
+import java.util.List;
 import org.forgerock.http.Filter;
 import org.forgerock.http.Handler;
 import org.forgerock.http.header.ContentTypeHeader;
@@ -32,21 +39,13 @@ import org.forgerock.http.protocol.Response;
 import org.forgerock.http.protocol.Status;
 import org.forgerock.http.routing.UriRouterContext;
 import org.forgerock.http.util.Json;
+import org.forgerock.http.util.Paths;
 import org.forgerock.services.context.Context;
 import org.forgerock.services.descriptor.Describable;
 import org.forgerock.util.promise.NeverThrowsException;
 import org.forgerock.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
-import io.swagger.models.Scheme;
-import io.swagger.models.Swagger;
 
 /**
  * This filter looks for the query parameter {code _api} : if present then it returns the API description of the
@@ -71,7 +70,7 @@ public class OpenApiRequestFilter implements Filter {
         }
 
         try {
-            Swagger result = ((Describable<Swagger, Request>) next).handleApiRequest(context, request);
+            OpenAPI result = ((Describable<OpenAPI, Request>) next).handleApiRequest(context, request);
             if (result == null) {
                 return newResponsePromise(new Response(Status.NOT_IMPLEMENTED));
             }
@@ -92,35 +91,30 @@ public class OpenApiRequestFilter implements Filter {
     }
 
     /**
-     * Deduce and set the base URI of the request for the OpenAPI descriptor from the request context. This method
-     * should set the {@code basePath}, {@code schemes} and {@code host} properties on the descriptor.
+     * Deduce and set the server URL of the request for the OpenAPI descriptor from the request context. This method
+     * should set the {@code servers} list on the descriptor.
      *
      * @param request The CHF request.
      * @param context The CHF request context.
      * @param descriptor The descriptor object.
      * @return The updated descriptor object.
      */
-    protected Swagger setUriDetailsIfNotPresent(Request request, Context context, Swagger descriptor) {
+    protected OpenAPI setUriDetailsIfNotPresent(Request request, Context context, OpenAPI descriptor) {
         if (context.containsContext(UriRouterContext.class)) {
             final UriRouterContext uriRouterContext = context.asContext(UriRouterContext.class);
             final URI originalUri = uriRouterContext.getOriginalUri();
 
-            // use scheme, host, and/or base-path from request, if not already defined by Swagger
-            if (descriptor.getBasePath() == null || descriptor.getBasePath().trim().isEmpty()) {
-                descriptor.setBasePath(uriRouterContext.getBaseUri());
-            }
-            if (descriptor.getSchemes() == null || descriptor.getSchemes().isEmpty()) {
-                descriptor.addScheme(Scheme.forValue(originalUri.getScheme()));
-            }
-            if (descriptor.getHost() == null || descriptor.getHost().trim().isEmpty()) {
+            if (descriptor.getServers() == null || descriptor.getServers().isEmpty()) {
+                String scheme = originalUri.getScheme();
                 String host = originalUri.getHost();
-                if (originalUri.getPort() != 80 && originalUri.getPort() != 443) {
+                if (originalUri.getPort() != -1 && originalUri.getPort() != 80 && originalUri.getPort() != 443) {
                     host += ":" + originalUri.getPort();
                 }
-                descriptor.setHost(host);
+                String basePath = Paths.addLeadingSlash(uriRouterContext.getBaseUri());
+                String serverUrl = scheme + "://" + host + (basePath != null ? basePath : "");
+                descriptor.setServers(List.of(new Server().url(serverUrl)));
             }
         }
         return descriptor;
     }
 }
-

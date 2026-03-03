@@ -69,7 +69,7 @@ import org.forgerock.util.promise.RuntimeExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * <p>
@@ -142,7 +142,7 @@ public final class HttpFrameworkServlet extends HttpServlet {
         try {
             this.handler = chainOf(asDescribableHandler(application.start()), new TransactionIdInboundFilter());
             if (application instanceof DescribedHttpApplication) {
-                ApiProducer<Swagger> apiProducer = ((DescribedHttpApplication) application).getApiProducer();
+                ApiProducer<OpenAPI> apiProducer = ((DescribedHttpApplication) application).getApiProducer();
                 this.handler.api(apiProducer);
             }
         } catch (HttpApplicationException e) {

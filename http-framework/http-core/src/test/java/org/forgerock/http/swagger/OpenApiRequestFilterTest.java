@@ -12,7 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
- * Portions Copyright 2018 Wren Security.
+ * Portions Copyright 2018-2026 Wren Security.
  */
 
 package org.forgerock.http.swagger;
@@ -39,9 +39,10 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
 
 @SuppressWarnings("javadoc")
 public class OpenApiRequestFilterTest {
@@ -54,9 +55,11 @@ public class OpenApiRequestFilterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        Swagger swagger = new Swagger().path("test", new Path().post(new Operation().produces("text/plain")));
+        Paths paths = new Paths();
+        paths.addPathItem("test", new PathItem().post(new Operation()));
+        OpenAPI openApi = new OpenAPI().paths(paths);
         when(handler.handleApiRequest(any(Context.class), any(Request.class)))
-                .thenReturn(swagger);
+                .thenReturn(openApi);
         when(handler.handle(any(Context.class), any(Request.class)))
                 .thenReturn(newResponsePromise(new Response(Status.TEAPOT)));
     }
@@ -73,9 +76,7 @@ public class OpenApiRequestFilterTest {
         AssertJJsonValueAssert.assertThat(json(response.getEntity().getJson())).isObject()
                 .hasObject("paths")
                 .hasObject("test")
-                .hasObject("post")
-                .hasArray("produces")
-                .containsExactly("text/plain");
+                .hasObject("post");
     }
 
     @Test

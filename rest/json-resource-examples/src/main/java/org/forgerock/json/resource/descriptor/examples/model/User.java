@@ -13,13 +13,11 @@
  *
  * Copyright 2016 ForgeRock AS.
  */
-
 package org.forgerock.json.resource.descriptor.examples.model;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.forgerock.api.annotations.Description;
 import org.forgerock.api.annotations.Title;
 import org.forgerock.api.annotations.UniqueItems;

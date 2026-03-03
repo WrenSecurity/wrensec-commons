@@ -13,128 +13,133 @@
   information: "Portions Copyright [year] [name of copyright owner]".
 
   Copyright 2014-2016 ForgeRock AS.
-  Portions Copyright 2017-2018 Wren Security.
+  Portions Copyright 2017-2026 Wren Security.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.wrensecurity.commons</groupId>
-    <artifactId>forgerock-rest</artifactId>
-    <version>23.0.0-M3-SNAPSHOT</version>
-  </parent>
+    <parent>
+        <groupId>org.wrensecurity.commons</groupId>
+        <artifactId>forgerock-rest</artifactId>
+        <version>23.0.0-M3-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>json-resource-examples</artifactId>
-  <packaging>war</packaging>
+    <artifactId>json-resource-examples</artifactId>
+    <packaging>war</packaging>
 
-  <name>Wren Security Commons REST - JSON Resource Examples</name>
-  <description>
-    Examples showing how to develop client applications and resource providers.
-  </description>
+    <name>Wren Security Commons REST - JSON Resource Examples</name>
+    <description>
+        Examples showing how to develop client applications and resource providers.
+    </description>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.wrensecurity.http</groupId>
-      <artifactId>chf-http-servlet</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj</artifactId>
+            <version>3.0.0</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.wrensecurity.commons</groupId>
-      <artifactId>forgerock-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+        <dependency>
+            <groupId>org.wrensecurity.commons</groupId>
+            <artifactId>forgerock-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.wrensecurity.commons</groupId>
-      <artifactId>json-resource</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+        <dependency>
+            <groupId>org.wrensecurity.commons</groupId>
+            <artifactId>json-resource</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.wrensecurity.commons</groupId>
-      <artifactId>json-resource-http</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+        <dependency>
+            <groupId>org.wrensecurity.commons</groupId>
+            <artifactId>json-resource-http</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.wrensecurity.commons.guava</groupId>
-      <artifactId>wrensec-guava-base</artifactId>
-    </dependency>
+        <dependency>
+            <groupId>org.wrensecurity.commons</groupId>
+            <artifactId>openapi-war-overlay</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
 
-    <dependency>
-      <groupId>org.wrensecurity.commons</groupId>
-      <artifactId>openapi-war-overlay</artifactId>
-      <version>${project.version}</version>
-      <type>war</type>
-    </dependency>
+        <dependency>
+            <groupId>org.wrensecurity.commons.guava</groupId>
+            <artifactId>wrensec-guava-base</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>org.asciidoctor</groupId>
-      <artifactId>asciidoctorj</artifactId>
-      <version>1.5.4</version>
-    </dependency>
+        <dependency>
+            <groupId>org.wrensecurity.http</groupId>
+            <artifactId>chf-http-servlet</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.wrensecurity.http</groupId>
-      <artifactId>http-descriptor-example</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
+        <dependency>
+            <groupId>org.wrensecurity.http</groupId>
+            <artifactId>http-descriptor-example</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+        </dependency>
+    </dependencies>
 
-        <configuration>
-          <createDependencyReducedPom>false</createDependencyReducedPom>
-        </configuration>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
 
-        <executions>
-          <execution>
-            <phase>package</phase>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
 
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-        <executions>
-          <execution>
-            <id>war</id>
-            <phase>package</phase>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
 
-            <goals>
-              <goal>war</goal>
-            </goals>
+                <executions>
+                    <execution>
+                        <id>war</id>
+                        <phase>package</phase>
 
-            <configuration>
-              <classifier>servlet</classifier>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
 
-              <overlays>
-                <overlay>
-                  <groupId>org.wrensecurity.commons</groupId>
-                  <artifactId>openapi-war-overlay</artifactId>
-                </overlay>
-              </overlays>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+                        <configuration>
+                            <classifier>servlet</classifier>
 
-      <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.14.v20181114</version>
-      </plugin>
-    </plugins>
-  </build>
+                            <overlays>
+                                <overlay>
+                                    <groupId>org.wrensecurity.commons</groupId>
+                                    <artifactId>openapi-war-overlay</artifactId>
+                                </overlay>
+                            </overlays>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.jetty.ee11</groupId>
+                <artifactId>jetty-ee11-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -14,23 +14,20 @@
  * Copyright 2016 ForgeRock AS.
  * Portions Copyright 2018-2023 Wren Security.
  */
-
 package org.forgerock.api;
 
-import static org.forgerock.api.jackson.JacksonUtils.*;
+import static org.forgerock.api.jackson.JacksonUtils.schemaFor;
 
+import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
 import java.io.File;
 import java.io.FilenameFilter;
-
-import org.wrensecurity.guava.common.base.Charsets;
-import org.wrensecurity.guava.common.io.Files;
+import org.forgerock.api.jackson.JacksonUtils;
+import org.forgerock.api.models.ApiDescription;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import org.forgerock.api.models.ApiDescription;
-import org.forgerock.api.jackson.JacksonUtils;
+import org.wrensecurity.guava.common.base.Charsets;
+import org.wrensecurity.guava.common.io.Files;
 
 public class ExamplesTest {
 
