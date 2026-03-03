@@ -21,7 +21,7 @@
   <parent>
     <artifactId>forgerock-http-framework-parent</artifactId>
     <groupId>org.wrensecurity.http</groupId>
-    <version>23.0.0-RC1</version>
+    <version>23.0.0-RC2-SNAPSHOT</version>
   </parent>
 
   <artifactId>chf-client-apache-common</artifactId>
