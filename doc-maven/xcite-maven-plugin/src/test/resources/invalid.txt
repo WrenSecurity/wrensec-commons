@@ -1,1 +1,0 @@
-return [ {"policyRequirement": "NOT_NULL"}];
