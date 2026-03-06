@@ -16,6 +16,7 @@
  */
 package org.forgerock.i18n.maven;
 
+import com.google.common.xml.XmlEscapers;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +35,6 @@ import java.util.TreeMap;
 import java.util.UnknownFormatConversionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -336,18 +336,18 @@ abstract class AbstractGenerateMessagesMojo extends AbstractMojo {
         String getComment() {
             final StringBuilder sb = new StringBuilder();
             sb.append(indent(1)).append("/**").append(EOL);
-            sb.append(indent(1)).append(" * ").append("{@code").append(EOL);
+            sb.append(indent(1)).append(" * ").append("<code>").append(EOL);
 
             // Unwrapped so that you can search through the descriptor
             // file for a message and not have to worry about line breaks
-            final String ws = formatString; // wrapText(formatString, 70);
+            final String ws = XmlEscapers.xmlContentEscaper().escape(formatString); // wrapText(formatString, 70);
 
             final String[] sa = ws.split(EOL);
             for (final String s : sa) {
                 sb.append(indent(1)).append(" * ").append(s).append(EOL);
             }
 
-            sb.append(indent(1)).append(" * ").append("}").append(EOL);
+            sb.append(indent(1)).append(" * ").append("</code>").append(EOL);
             sb.append(indent(1)).append(" */").append(EOL);
             return sb.toString();
         }
@@ -541,6 +541,7 @@ abstract class AbstractGenerateMessagesMojo extends AbstractMojo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public final void execute() throws MojoExecutionException {
         final File resourceDirectory = getResourceDirectory();
 
