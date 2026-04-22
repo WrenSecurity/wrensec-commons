@@ -357,7 +357,7 @@ public class OpenApiTransformerTest {
                 {json(object(
                         field("type", "string"),
                         field("enum", array("enum_1", "enum_2")),
-                        field("options", object(field("enum_titles", array("enum_1_title", "enum_2_title")))))),
+                        field("options", object(field("enum_titles", array(new LocalizableString("enum_1_title"), "enum_2_title")))))),
                         new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
                             public io.swagger.v3.oas.models.media.Schema get() {

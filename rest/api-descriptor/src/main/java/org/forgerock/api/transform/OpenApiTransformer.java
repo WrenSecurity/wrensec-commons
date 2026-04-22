@@ -769,7 +769,7 @@ public class OpenApiTransformer {
         return operation;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked" })
     private void addOperation(final LocalizableOperation operation, final String method, final String pathName,
             final String pathFragment, final String resourceVersion, final LocalizableString tag,
             final Map<String, PathItem> pathMap) {
@@ -902,7 +902,7 @@ public class OpenApiTransformer {
                         .$ref("#/components/parameters/" + PARAMETER_PRETTY_PRINT));
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     private void applyOperationRequestPayload(final Schema schema, final Operation operation) {
         if (schema != null) {
             final io.swagger.v3.oas.models.media.Schema mediaSchema;
@@ -928,7 +928,7 @@ public class OpenApiTransformer {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     private void applyOperationResponsePayloads(final Schema schema, final ApiError[] apiErrorResponses,
             final org.forgerock.api.models.Operation operationModel, final Operation operation) {
         final ApiResponses responses = new ApiResponses();
@@ -1115,7 +1115,6 @@ public class OpenApiTransformer {
     }
 
     @VisibleForTesting
-    @SuppressWarnings("rawtypes")
     void buildDefinitions() {
         final Definitions definitions = apiDescription.getDefinitions();
         if (definitions != null) {
@@ -1145,7 +1144,7 @@ public class OpenApiTransformer {
      * @return OpenAPI Schema
      */
     @VisibleForTesting
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     io.swagger.v3.oas.models.media.Schema buildSchema(final JsonValue schema) {
         final String type = getType(schema);
         if (type == null) {
@@ -1231,7 +1230,7 @@ public class OpenApiTransformer {
         return result;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked" })
     private LocalizableSchema buildScalarSchema(final JsonValue schema, final String type) {
         final LocalizableSchema result = new LocalizableSchema();
         result.type(type);
@@ -1246,9 +1245,9 @@ public class OpenApiTransformer {
 
             final JsonValue options = schema.get("options");
             if (options.isNotNull()) {
-                final List<String> enumTitles = getArrayOfJsonString("enum_titles", options);
-                if (!enumTitles.isEmpty()) {
-                    result.addExtension("x-enum_titles", enumTitles);
+                JsonValue enumTitles = options.get("enum_titles");
+                if (enumTitles.isNotNull() && enumTitles.isCollection()) {
+                    result.addExtension("x-enum_titles", enumTitles.asList());
                 }
             }
         }
@@ -1277,7 +1276,7 @@ public class OpenApiTransformer {
      * Convert JSON schema-properties into a map of Schema objects.
      */
     @VisibleForTesting
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     Map<String, io.swagger.v3.oas.models.media.Schema> buildSchemaProperties(final JsonValue schema) {
         if (schema != null && schema.isNotNull()) {
             final JsonValue properties = schema.get("properties");
