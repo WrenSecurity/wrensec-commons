@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 package org.forgerock.http.grizzly;
 
@@ -24,13 +25,13 @@ import static org.forgerock.http.protocol.Responses.newInternalServerError;
 import static org.forgerock.http.routing.UriRouterContext.uriRouterContext;
 import static org.forgerock.util.Utils.closeSilently;
 
+import io.swagger.models.Swagger;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import org.forgerock.http.ApiProducer;
 import org.forgerock.http.DescribedHttpApplication;
 import org.forgerock.http.Handler;
@@ -59,8 +60,6 @@ import org.glassfish.grizzly.http.server.util.Globals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.models.Swagger;
-
 /**
  * A Grizzly implementation which provides integration between the Grizzly API and the common HTTP Framework.
  *
@@ -88,7 +87,6 @@ final class HandlerAdapter extends HttpHandler {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void start() {
         super.start();
         try {
@@ -119,7 +117,12 @@ final class HandlerAdapter extends HttpHandler {
         final AttributesContext attributesContext = new AttributesContext(new RequestAuditContext(uriRouterContext));
         final ClientContext context = createClientContext(attributesContext, request);
 
+        // suspend IO events
+        request.getContext().suspend();
+
+        // suspend HTTP response processing
         response.suspend();
+
         describedHandler.handle(context, chfRequest)
                 .thenOnResult(new ResultHandler<org.forgerock.http.protocol.Response>() {
                     @Override
