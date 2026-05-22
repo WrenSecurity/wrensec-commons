@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.wrensecurity.commons</groupId>
     <artifactId>commons-parent</artifactId>
-    <version>22.6.3</version>
+    <version>22.6.4-SNAPSHOT</version>
   </parent>
 
   <groupId>org.wrensecurity.http</groupId>
