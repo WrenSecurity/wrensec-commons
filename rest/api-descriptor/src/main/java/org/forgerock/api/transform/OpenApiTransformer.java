@@ -1495,9 +1495,9 @@ public class OpenApiTransformer {
             result.setEnum(enumValues);
             final JsonValue options = schema.get("options");
             if (options.isNotNull()) {
-                final List<String> enumTitles = getArrayOfJsonString("enum_titles", options);
-                if (!enumTitles.isEmpty()) {
-                    result.addExtension("x-enum_titles", enumTitles);
+                JsonValue enumTitles = options.get("enum_titles");
+                if (enumTitles.isNotNull() && enumTitles.isCollection()) {
+                    result.addExtension("x-enum_titles", enumTitles.asList());
                 }
             }
         }

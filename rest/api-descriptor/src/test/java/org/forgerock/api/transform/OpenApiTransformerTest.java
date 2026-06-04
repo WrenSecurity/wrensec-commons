@@ -357,7 +357,9 @@ public class OpenApiTransformerTest {
                 {json(object(
                         field("type", "string"),
                         field("enum", array("enum_1", "enum_2")),
-                        field("options", object(field("enum_titles", array(new LocalizableString("enum_1_title"), "enum_2_title")))))),
+                        field("options", object(field("enum_titles", array(
+                            new LocalizableString("enum_1_title"),
+                            "enum_2_title")))))),
                         new Supplier<io.swagger.v3.oas.models.media.Schema>() {
                             @Override
                             public io.swagger.v3.oas.models.media.Schema get() {
@@ -366,6 +368,25 @@ public class OpenApiTransformerTest {
                                 o.setEnum(Arrays.asList("enum_1", "enum_2"));
                                 o.addExtension("x-enum_titles", Arrays.asList("enum_1_title", "enum_2_title"));
                                 return o;
+                            }
+                        }.get(), null},
+                {json(object(
+                        field("type", "object"),
+                        field("properties", object(
+                            field("nested_enum", object(
+                                field("type", "string"),
+                                field("enum", array("enum_value")),
+                                field("options", object(field("enum_titles", array(
+                                    new LocalizableString("enum_title"))))))))))),
+                        new Supplier<io.swagger.v3.oas.models.media.Schema>() {
+                            @Override
+                            public io.swagger.v3.oas.models.media.Schema get() {
+                                return new LocalizableSchema()
+                                        .type("object")
+                                        .addProperty("nested_enum", new LocalizableSchema()
+                                                .type("string")
+                                                ._enum(Arrays.asList("enum_value"))
+                                                .extensions(Map.of("x-enum_titles", Arrays.asList("enum_title"))));
                             }
                         }.get(), null},
                 {json(object(
