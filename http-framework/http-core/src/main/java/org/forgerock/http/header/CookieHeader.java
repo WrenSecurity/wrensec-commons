@@ -13,84 +13,45 @@
  *
  * Copyright 2010–2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.http.header;
 
-import static java.util.Collections.*;
-import static org.forgerock.http.header.HeaderUtil.*;
+import static java.util.Collections.singletonList;
+import static org.forgerock.http.header.HeaderUtil.parseMultiValuedHeader;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Request;
 
 /**
- * Processes the <strong>{@code Cookie}</strong> request message header. For
- * more information, see the original <a href=
- * "http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html"
- * > Netscape specification</a>, <a
- * href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and <a
- * href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
+ * Processes the <strong>{@code Cookie}</strong> request message header.
+ *
  * <p>
- * Note: This implementation is designed to be forgiving when parsing malformed
- * cookies.
+ * For more information see <a href="https://www.rfc-editor.org/rfc/rfc6265.txt">RFC 6265</a>.
+ * <p>
+ * Note: This implementation is designed to be forgiving when parsing malformed cookies.
  */
 public class CookieHeader extends Header {
     private static CookieHeader valueOf(final List<String> values) {
         List<Cookie> cookies = new ArrayList<>(values.size());
-        Integer version = null;
-        Cookie cookie = new Cookie();
         for (String s1 : values) {
             for (String s2 : HeaderUtil.split(s1, ';')) {
                 String[] nvp = HeaderUtil.parseParameter(s2);
-                if (nvp[0].length() > 0 && nvp[0].charAt(0) != '$') {
-                    if (cookie.getName() != null) {
-                        // existing cookie was being parsed
-                        cookies.add(cookie);
-                    }
-                    cookie = new Cookie();
-                    // inherit previous parsed version
-                    cookie.setVersion(version);
-                    cookie.setName(nvp[0]);
-                    cookie.setValue(nvp[1]);
-                } else if ("$Version".equalsIgnoreCase(nvp[0])) {
-                    cookie.setVersion(version = parseInteger(nvp[1]));
-                } else if ("$Path".equalsIgnoreCase(nvp[0])) {
-                    cookie.setPath(nvp[1]);
-                } else if ("$Domain".equalsIgnoreCase(nvp[0])) {
-                    cookie.setDomain(nvp[1]);
-                } else if ("$Port".equalsIgnoreCase(nvp[0])) {
-                    cookie.getPort().clear();
-                    parsePorts(cookie.getPort(), nvp[1]);
+                if (nvp[0].isEmpty()) {
+                    continue; // ignore empty cookie pair
+                } else if (nvp[0].startsWith("$")) {
+                    continue; // ignore legacy cookie attributes
+                } else if (nvp.length > 1){
+                    cookies.add(new Cookie(nvp[0], nvp[1]));
                 }
             }
         }
-        if (cookie.getName() != null) {
-            // last cookie being parsed
-            cookies.add(cookie);
-        }
         return new CookieHeader(cookies);
-    }
-
-    private static void parsePorts(List<Integer> list, String s) {
-        for (String port : s.split(",")) {
-            Integer p = parseInteger(port);
-            if (p != null) {
-                list.add(p);
-            }
-        }
-    }
-
-    private static Integer parseInteger(String s) {
-        try {
-            return Integer.valueOf(s);
-        } catch (NumberFormatException nfe) {
-            return null;
-        }
     }
 
     /**
@@ -154,52 +115,17 @@ public class CookieHeader extends Header {
 
     @Override
     public List<String> getValues() {
-        boolean quoted = false;
-        Integer version = null;
-        for (Cookie cookie : cookies) {
-            if (cookie.getVersion() != null && (version == null || cookie.getVersion() > version)) {
-                version = cookie.getVersion();
-            } else if (version == null && (cookie.getPath() != null || cookie.getDomain() != null)) {
-                // presence of extended fields makes it version 1 at minimum
-                version = 1;
-            }
-        }
         StringBuilder sb = new StringBuilder();
-        if (version != null) {
-            sb.append("$Version=").append(version.toString());
-            quoted = true;
-        }
         for (Cookie cookie : cookies) {
             if (cookie.getName() != null) {
                 if (sb.length() > 0) {
                     sb.append("; ");
                 }
                 sb.append(cookie.getName()).append('=');
-                sb.append(quoted ? HeaderUtil.quote(cookie.getValue()) : cookie.getValue());
-                if (cookie.getPath() != null) {
-                    sb.append("; $Path=").append(HeaderUtil.quote(cookie.getPath()));
-                }
-                if (cookie.getDomain() != null) {
-                    sb.append("; $Domain=").append(HeaderUtil.quote(cookie.getDomain()));
-                }
-                if (cookie.getPort().size() > 0) {
-                    sb.append("; $Port=").append(HeaderUtil.quote(portList(cookie.getPort())));
-                }
+                sb.append(HeaderUtil.quote(cookie.getValue()));
             }
         }
-        // return null if empty
-        return sb.length() > 0 ? singletonList(sb.toString()) : Collections.<String>emptyList();
-    }
-
-    private String portList(List<Integer> ports) {
-        StringBuilder sb = new StringBuilder();
-        for (Integer port : ports) {
-            if (sb.length() > 0) {
-                sb.append(',');
-            }
-            sb.append(port.toString());
-        }
-        return sb.toString();
+        return sb.length() > 0 ? singletonList(sb.toString()) : Collections.emptyList();
     }
 
     static class Factory extends HeaderFactory<CookieHeader> {
