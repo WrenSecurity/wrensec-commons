@@ -12,6 +12,7 @@
  * information: "Portions Copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 package org.forgerock.http.header;
 
@@ -29,9 +30,9 @@ import org.testng.annotations.Test;
 
 /**
  * Unit tests for the cookie header class.
+ *
  * <p>
- * See <link>http://www.ietf.org/rfc/rfc2109.txt</link>
- * </p>
+ * See <link>https://www.rfc-editor.org/rfc/rfc6265.txt</link>
  */
 @SuppressWarnings("javadoc")
 public class CookieHeaderTest {
@@ -45,12 +46,7 @@ public class CookieHeaderTest {
         final CookieHeader ch = CookieHeader.valueOf(CHEADER_1);
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertEquals(cookie.getVersion().intValue(), 1);
         assertEquals(cookie.getValue(), "BAB_JENSEN");
-        assertEquals(cookie.getPath(), "/example");
-        assertEquals(cookie.getPort().size(), 2);
-        assertEquals(cookie.getPort().get(0).intValue(), 42);
-        assertEquals(cookie.getPort().get(1).intValue(), 13);
         assertEquals(ch.getName(), NAME);
     }
 
@@ -59,11 +55,7 @@ public class CookieHeaderTest {
         final CookieHeader ch = CookieHeader.valueOf(CHEADER_2);
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertEquals(cookie.getVersion().intValue(), 2);
         assertEquals(cookie.getValue(), "SAM_CARTER");
-        assertEquals(cookie.getPath(), "/example");
-        assertEquals(cookie.getPort().size(), 0);
-        assertEquals(cookie.getDomain(), "example.com");
         assertEquals(ch.getName(), NAME);
     }
 
@@ -72,7 +64,6 @@ public class CookieHeaderTest {
         final CookieHeader ch = CookieHeader.valueOf("Customer=\"BAB_JENSEN\"; $Path=\"/example\"");
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertNull(cookie.getVersion());
         assertEquals(cookie.getValue(), "BAB_JENSEN");
         assertEquals(ch.getName(), NAME);
     }
@@ -84,7 +75,6 @@ public class CookieHeaderTest {
                         .valueOf("$Version=invalid; Customer=\"BAB_JENSEN\"; $Path=\"/example\"");
         assertEquals(ch.getCookies().size(), 1);
         final Cookie cookie = ch.getCookies().get(0);
-        assertNull(cookie.getVersion());
         assertEquals(cookie.getValue(), "BAB_JENSEN");
         assertEquals(ch.getName(), NAME);
     }
@@ -103,27 +93,7 @@ public class CookieHeaderTest {
 
     @Test
     public void testCookieHeaderToString() {
-        assertThat(CookieHeader.valueOf(CHEADER_1).getValues()).containsOnly(CHEADER_1);
-    }
-
-
-    @Test
-    public void testCookieHeaderToStringInsertVersionWhenPathOrDomainArePresent() {
-        CookieHeader ch = CookieHeader.valueOf("Customer=\"SAM_CARTER\";");
-        assertNull(ch.getCookies().get(0).getVersion());
-        assertThat(ch.toString()).doesNotContain("$Version=1;");
-
-        ch = CookieHeader.valueOf("Customer=\"SAM_CARTER\"; $Path=\"/example\"");
-        assertNull(ch.getCookies().get(0).getVersion());
-        assertThat(ch.getValues().iterator().next()).contains("$Version=1;");
-
-        ch = CookieHeader.valueOf("Customer=\"SAM_CARTER\"; $Domain=\"example.com\"");
-        assertNull(ch.getCookies().get(0).getVersion());
-        assertThat(ch.getValues().iterator().next()).contains("$Version=1;");
-
-        ch = CookieHeader.valueOf("Customer=\"SAM_CARTER\"; $Domain=\"example.com\"; $Version=2");
-        assertEquals(ch.getCookies().get(0).getVersion().intValue(), 2);
-        assertThat(ch.getValues().iterator().next()).doesNotContain("$Version=1;");
+        assertThat(CookieHeader.valueOf(CHEADER_1).getValues()).containsOnly("Customer=\"BAB_JENSEN\"");
     }
 
     @Test
@@ -135,7 +105,7 @@ public class CookieHeaderTest {
         response.getHeaders().add(ch);
         assertNotNull(response.getHeaders().get("cookie"));
         assertNull(response.getHeaders().get("Customer"));
-        assertThat(response.getHeaders().get("cookie").getValues()).containsOnly(CHEADER_1);
+        assertThat(response.getHeaders().get("cookie").getValues()).containsOnly("Customer=\"BAB_JENSEN\"");
     }
 
     @Test
@@ -151,8 +121,6 @@ public class CookieHeaderTest {
 
         final Cookie cookie = request.getCookies().get("Customer").get(0);
         assertEquals(cookie.getName(), "Customer");
-        assertEquals(cookie.getVersion().intValue(), 1);
-        assertEquals(cookie.getPort().size(), 2);
         assertEquals(cookie.getValue(), "BAB_JENSEN");
     }
 

@@ -12,16 +12,18 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.http.header;
 
-import static java.util.Collections.*;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.Map;
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Header;
 import org.forgerock.http.protocol.Response;
@@ -52,24 +54,13 @@ public class SetCookieHeader extends Header {
 
     private static Cookie parseCookie(String value) {
         List<String> parts = Arrays.asList(value.split(";"));
-        Cookie cookie = new Cookie();
+        Cookie cookie = null;
         for (String part : parts) {
             String[] nvp = part.split("=", 2);
-            if ("Expires".equalsIgnoreCase(nvp[0].trim())) {
-                cookie.setExpires(HeaderUtil.parseDate(nvp[1].trim()));
-            } else if ("Max-Age".equalsIgnoreCase(nvp[0].trim())) {
-                cookie.setMaxAge(parseInteger(nvp[1].trim()));
-            } else if ("Path".equalsIgnoreCase(nvp[0].trim())) {
-                cookie.setPath(nvp[1]);
-            } else if ("Domain".equalsIgnoreCase(nvp[0].trim())) {
-                cookie.setDomain(nvp[1]);
-            } else if ("Secure".equalsIgnoreCase(nvp[0].trim())) {
-                cookie.setSecure(true);
-            } else if ("HttpOnly".equalsIgnoreCase(nvp[0].trim())) {
-                cookie.setHttpOnly(true);
-            } else if (cookie.getName() == null || cookie.getName().isEmpty()) {
-                cookie.setName(nvp[0].trim());
-                cookie.setValue(nvp[1].trim());
+            if (cookie == null) {
+                cookie = new Cookie(nvp[0].trim(), nvp.length > 1 ? nvp[1].trim() : null);
+            } else {
+                cookie.setAttribute(nvp[0].trim(), nvp.length > 1 ? nvp[1].trim() : Boolean.TRUE.toString());
             }
         }
         if (cookie.getName() == null || cookie.getName().isEmpty()) {
@@ -108,14 +99,6 @@ public class SetCookieHeader extends Header {
             cookies.add(parseCookie(headerValue));
         }
         return new SetCookieHeader(unmodifiableList(cookies));
-    }
-
-    private static Integer parseInteger(String s) {
-        try {
-            return Integer.valueOf(s);
-        } catch (NumberFormatException nfe) {
-            return null;
-        }
     }
 
     private final List<Cookie> cookies;
@@ -161,23 +144,16 @@ public class SetCookieHeader extends Header {
         StringBuilder sb = new StringBuilder();
         if (cookie.getName() != null) {
             sb.append(cookie.getName()).append("=").append(cookie.getValue());
-            if (cookie.getExpires() != null) {
-                sb.append("; ").append("Expires").append("=").append(HeaderUtil.formatDate(cookie.getExpires()));
-            }
-            if (cookie.getMaxAge() != null ) {
-                sb.append("; ").append("Max-Age").append("=").append(cookie.getMaxAge());
-            }
-            if (cookie.getPath() != null) {
-                sb.append("; ").append("Path").append("=").append(cookie.getPath());
-            }
-            if (cookie.getDomain() != null) {
-                sb.append("; ").append("Domain").append("=").append(cookie.getDomain());
-            }
-            if (cookie.isSecure() != null && cookie.isSecure()) {
-                sb.append("; ").append("Secure");
-            }
-            if (cookie.isHttpOnly() != null && cookie.isHttpOnly()) {
-                sb.append("; ").append("HttpOnly");
+            Map<String, String> attributes = cookie.getAttributes();
+            for (String name : attributes.keySet()) {
+                String value = attributes.get(name);
+                if (value == null) {
+                    continue; // unexpected null value (better safe than sorry)
+                } else if (name.equalsIgnoreCase("HttpOnly") || name.equalsIgnoreCase("Secure")) {
+                    sb.append("; ").append(name);
+                } else {
+                    sb.append("; ").append(name).append("=").append(value);
+                }
             }
         }
         return sb.toString();
