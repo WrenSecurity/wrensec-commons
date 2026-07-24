@@ -17,7 +17,10 @@
 # Wren Security Commons
 
 [![License](https://img.shields.io/badge/license-CDDL-blue.svg)](https://github.com/WrenSecurity/wrensec-commons/blob/main/LICENSE)
-[![Gitter](https://img.shields.io/matrix/wrensecurity_lobby%3Agitter.im?server_fqdn=matrix.org)](https://matrix.to/#/#WrenSecurity_Lobby:gitter.im)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/WrenSecurity/wrensec-commons/badge)](https://scorecard.dev/viewer/?uri=github.com/WrenSecurity/wrensec-commons)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12075/badge)](https://www.bestpractices.dev/projects/12075)
+[![CodeQL](https://github.com/WrenSecurity/wrensec-commons/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/WrenSecurity/wrensec-commons/actions/workflows/github-code-scanning/codeql)
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=WrenSecurity_wrensec-commons&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=WrenSecurity_wrensec-commons)
 
 Wren Security Commons is a set of reusable libraries and frameworks shared across [Wren Security](https://wrensecurity.org) projects.
 It provides common functionality for identity management, access management, HTTP/REST services, and more.
