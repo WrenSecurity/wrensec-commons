@@ -27,7 +27,7 @@
 
     <groupId>org.wrensecurity.commons</groupId>
     <artifactId>commons-bom</artifactId>
-    <version>23.0.3</version>
+    <version>23.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Wren Security Commons - Bill Of Materials</name>

@@ -21,7 +21,7 @@
     <parent>
         <artifactId>forgerock-selfservice</artifactId>
         <groupId>org.wrensecurity.commons</groupId>
-        <version>23.0.3</version>
+        <version>23.0.4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
