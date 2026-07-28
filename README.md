@@ -19,6 +19,7 @@
 [![License](https://img.shields.io/badge/license-CDDL-blue.svg)](https://github.com/WrenSecurity/wrensec-commons/blob/main/LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/WrenSecurity/wrensec-commons/badge)](https://scorecard.dev/viewer/?uri=github.com/WrenSecurity/wrensec-commons)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12075/badge)](https://www.bestpractices.dev/projects/12075)
+[![OpenSSF Baseline](https://www.bestpractices.dev/projects/12075/baseline)](https://www.bestpractices.dev/projects/12075)
 [![CodeQL](https://github.com/WrenSecurity/wrensec-commons/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/WrenSecurity/wrensec-commons/actions/workflows/github-code-scanning/codeql)
 [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=WrenSecurity_wrensec-commons&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=WrenSecurity_wrensec-commons)
 
