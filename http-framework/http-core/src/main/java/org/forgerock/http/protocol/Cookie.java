@@ -13,83 +13,64 @@
  *
  * Copyright 2010–2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.http.protocol;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import org.forgerock.http.header.HeaderUtil;
+import org.wrensecurity.guava.common.base.Objects;
 
 /**
- * An HTTP cookie. For more information, see the original <a href=
- * "http://web.archive.org/web/20070805052634/http://wp.netscape.com/newsref/std/cookie_spec.html"
- * > Netscape specification</a>, <a
- * href="http://www.ietf.org/rfc/rfc2109.txt">RFC 2109</a> and <a
- * href="http://www.ietf.org/rfc/rfc2965.txt">RFC 2965</a>.
+ * An HTTP cookie.
+ *
+ * <p>
+ * For more information see <a href="https://www.rfc-editor.org/rfc/rfc6265.txt">RFC 6265</a>.
  */
 public class Cookie {
+
+    private static final String MAX_AGE_ATTR_NAME = "Max-Age";
+
+    private static final String EXPIRES_ATTR_NAME = "Expires";
+
+    private static final String DOMAIN_ATTR_NAME = "Domain";
+
+    private static final String PATH_ATTR_NAME = "Path";
+
+    private static final String SECURE_ATTR_NAME = "Secure";
+
+    private static final String HTTPONLY_ATTR_NAME = "HttpOnly";
+
     /** The name of the cookie. */
     private String name;
 
     /** The value of the cookie. */
     private String value;
 
-    /** The intended use of a cookie. */
-    private String comment;
-
-    /** URL identifying the intended use of a cookie. */
-    private String commentURL;
+    /** Additional cookie attribute-value pairs. */
+    private Map<String, String> attributes;
 
     /**
-     * Directs the user agent to discard the cookie unconditionally when it
-     * terminates.
-     */
-    private Boolean discard;
-
-    /** The domain for which the cookie is valid. */
-    private String domain;
-
-    /**
-     * The lifetime of the cookie, expressed as the date and time of expiration.
-     */
-    private Date expires;
-
-    /**
-     * Directs the user agent to make the cookie inaccessible to client side
-     * script.
-     */
-    private Boolean httpOnly;
-
-    /** The lifetime of the cookie, expressed in seconds. */
-    private Integer maxAge;
-
-    /** The subset of URLs on the origin server to which this cookie applies. */
-    private String path;
-
-    /** Restricts the port(s) to which a cookie may be returned. */
-    private final List<Integer> port = new ArrayList<>();
-
-    /**
-     * Directs the user agent to use only secure means to send back this cookie.
-     */
-    private Boolean secure;
-
-    /**
-     * The version of the state management mechanism to which this cookie
-     * conforms.
-     */
-    private Integer version;
-
-    /**
-     * Creates a new uninitialized cookie.
+     * Create a new uninitialized cookie.
      */
     public Cookie() {
         // Empty cookie.
     }
 
+    /**
+     * Create a new cookie with the given name and value.
+     */
+    public Cookie(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
+
     @Override
-    public boolean equals(final Object obj) {
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -97,379 +78,239 @@ public class Cookie {
             return false;
         }
         final Cookie other = (Cookie) obj;
-        return objectsAreEqual(comment, other.comment)
-                && objectsAreEqual(commentURL, other.commentURL)
-                && objectsAreEqual(discard, other.discard)
-                && objectsAreEqual(domain, other.domain)
-                && objectsAreEqual(expires, other.expires)
-                && objectsAreEqual(httpOnly, other.httpOnly)
-                && objectsAreEqual(maxAge, other.maxAge)
-                && objectsAreEqual(name, other.name)
-                && objectsAreEqual(path, other.path)
-                && objectsAreEqual(port, other.port)
-                && objectsAreEqual(secure, other.secure)
-                && objectsAreEqual(value, other.value)
-                && objectsAreEqual(version, other.version);
+        return Objects.equal(name, other.name)
+                && Objects.equal(value, other.value)
+                && Objects.equal(attributes, other.attributes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name, value, attributes);
     }
 
     /**
-     * Returns the intended use of a cookie.
+     * Get all cookie attributes.
      *
-     * @return The intended use of a cookie.
+     * @return cookie attributes or empty map if none defined
      */
-    public String getComment() {
-        return comment;
+    public Map<String, String> getAttributes() {
+        return attributes == null ? Collections.emptyMap() : Collections.unmodifiableMap(attributes);
     }
 
     /**
-     * Returns the URL identifying the intended use of a cookie.
+     * Get cookie attribute value.
      *
-     * @return The URL identifying the intended use of a cookie.
+     * @param name cookie attribute name
+     * @return cookie attribute value or <code>null</code> if no such attribute has been set
      */
-    public String getCommentURL() {
-        return commentURL;
+    public String getAttribute(String name) {
+        return attributes != null ? attributes.get(name) : null;
     }
 
     /**
-     * Returns {@code true} if the user agent should discard the cookie
-     * unconditionally when it terminates.
+     * Set cookie attribute value or remove existing value by setting <code>null</code>.
      *
-     * @return {@code true} if the user agent should discard the cookie
-     *         unconditionally when it terminates.
+     * @param name cookie attribute name
+     * @param value cookie attribute value to set or <code>null</code> to remove any previously set value
+     * @return this cookie
+     *
+     * @throws IllegalArgumentException in case the attribute name is <code>null</code> or empty
      */
-    public Boolean getDiscard() {
-        return discard;
+    public Cookie setAttribute(String name, String value) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Cookie attribute name can not be empty");
+        }
+
+        if (EXPIRES_ATTR_NAME.equalsIgnoreCase(name)) {
+            return setExpires(HeaderUtil.parseDate(value));
+        } else if (MAX_AGE_ATTR_NAME.equalsIgnoreCase(name)) {
+            return setMaxAge(value != null ? parseInteger(value) : null);
+        } else if (HTTPONLY_ATTR_NAME.equalsIgnoreCase(name) || SECURE_ATTR_NAME.equalsIgnoreCase(name)) {
+            return putAttribute(name, Boolean.parseBoolean(value) ? "true" : null);
+        } else {
+            return putAttribute(name, value);
+        }
+    }
+
+    private Integer parseInteger(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Cookie putAttribute(String name, String value) {
+        if (attributes == null) {
+            attributes = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        }
+
+        if (value != null) {
+            attributes.put(name, value);
+        } else {
+            attributes.remove(name);
+        }
+        return this;
     }
 
     /**
-     * Returns the domain for which the cookie is valid.
+     * Get name of the cookie.
      *
-     * @return The domain for which the cookie is valid.
-     */
-    public String getDomain() {
-        return domain;
-    }
-
-    /**
-     * Returns the lifetime of the cookie, expressed as the date and time of
-     * expiration.
-     *
-     * @return The lifetime of the cookie, expressed as the date and time of
-     *         expiration.
-     */
-    public Date getExpires() {
-        return expires;
-    }
-
-    /**
-     * Returns {@code true} if the user agent should make the cookie
-     * inaccessible to client side script.
-     *
-     * @return {@code true} if the user agent should make the cookie
-     *         inaccessible to client side script.
-     */
-    public Boolean isHttpOnly() {
-        return httpOnly == null ? false : httpOnly;
-    }
-
-    /**
-     * Returns the lifetime of the cookie, expressed in seconds.
-     *
-     * @return The lifetime of the cookie, expressed in seconds.
-     */
-    public Integer getMaxAge() {
-        return maxAge;
-    }
-
-    /**
-     * Returns name of the cookie.
-     *
-     * @return The name of the cookie.
+     * @return the name of the cookie
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Returns the subset of URLs on the origin server to which this cookie
-     * applies.
+     * Set the name of the cookie.
      *
-     * @return The subset of URLs on the origin server to which this cookie
-     *         applies.
+     * @param name the name of the cookie
+     * @return this cookie
      */
-    public String getPath() {
-        return path;
+    public Cookie setName(String name) {
+        this.name = name;
+        return this;
     }
 
     /**
-     * Returns the restricted list of port(s) to which a cookie may be returned.
+     * Get the value of the cookie.
      *
-     * @return The restricted list of port(s) to which a cookie may be returned.
-     */
-    public List<Integer> getPort() {
-        return port;
-    }
-
-    /**
-     * Returns {@code true} if the user agent should use only secure means to
-     * send back this cookie.
-     *
-     * @return {@code true} if the user agent should use only secure means to
-     *         send back this cookie.
-     */
-    public Boolean isSecure() {
-        return secure == null ? false : secure;
-    }
-
-    /**
-     * Returns the value of the cookie.
-     *
-     * @return The value of the cookie.
+     * @return the value of the cookie
      */
     public String getValue() {
         return value;
     }
 
     /**
-     * Returns the version of the state management mechanism to which this
-     * cookie conforms.
-     *
-     * @return The version of the state management mechanism to which this
-     *         cookie conforms.
-     */
-    public Integer getVersion() {
-        return version;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (comment == null ? 0 : comment.hashCode());
-        result = prime * result + (commentURL == null ? 0 : commentURL.hashCode());
-        result = prime * result + (discard == null ? 0 : discard.hashCode());
-        result = prime * result + (domain == null ? 0 : domain.hashCode());
-        result = prime * result + (expires == null ? 0 : expires.hashCode());
-        result = prime * result + (httpOnly == null ? 0 : httpOnly.hashCode());
-        result = prime * result + (maxAge == null ? 0 : maxAge.hashCode());
-        result = prime * result + (name == null ? 0 : name.hashCode());
-        result = prime * result + (path == null ? 0 : path.hashCode());
-        result = prime * result + (port == null ? 0 : port.hashCode());
-        result = prime * result + (secure == null ? 0 : secure.hashCode());
-        result = prime * result + (value == null ? 0 : value.hashCode());
-        result = prime * result + (version == null ? 0 : version.hashCode());
-        return result;
-    }
-
-    /**
-     * Sets the intended use of a cookie.
-     *
-     * @param comment
-     *            The intended use of a cookie.
-     * @return This cookie.
-     */
-    public Cookie setComment(final String comment) {
-        this.comment = comment;
-        return this;
-    }
-
-    /**
-     * Sets the URL identifying the intended use of a cookie.
-     *
-     * @param commentURL
-     *            The URL identifying the intended use of a cookie.
-     * @return This cookie.
-     */
-    public Cookie setCommentURL(final String commentURL) {
-        this.commentURL = commentURL;
-        return this;
-    }
-
-    /**
-     * Sets the value indicating whether the user agent should discard the
-     * cookie unconditionally when it terminates.
-     *
-     * @param discard
-     *            {@code true} if the user agent should discard the cookie
-     *            unconditionally when it terminates.
-     * @return This cookie.
-     */
-    public Cookie setDiscard(final Boolean discard) {
-        this.discard = discard;
-        return this;
-    }
-
-    /**
-     * Sets the domain for which the cookie is valid.
-     *
-     * @param domain
-     *            The domain for which the cookie is valid.
-     * @return This cookie.
-     */
-    public Cookie setDomain(final String domain) {
-        this.domain = domain;
-        return this;
-    }
-
-    /**
-     * Sets the lifetime of the cookie, expressed as the date and time of
-     * expiration.
-     *
-     * @param expires
-     *            The lifetime of the cookie, expressed as the date and time of
-     *            expiration.
-     * @return This cookie.
-     */
-    public Cookie setExpires(final Date expires) {
-        this.expires = expires;
-        return this;
-    }
-
-    /**
-     * Sets the value indicating whether the user agent should make the cookie
-     * inaccessible to client side script.
-     *
-     * @param httpOnly
-     *            {@code true} if the user agent should make the cookie
-     *            inaccessible to client side script.
-     * @return this;
-     */
-    public Cookie setHttpOnly(final Boolean httpOnly) {
-        this.httpOnly = httpOnly;
-        return this;
-    }
-
-    /**
-     * Sets the lifetime of the cookie, expressed in seconds.
-     *
-     * @param maxAge
-     *            The lifetime of the cookie, expressed in seconds.
-     * @return This cookie.
-     */
-    public Cookie setMaxAge(final Integer maxAge) {
-        this.maxAge = maxAge;
-        return this;
-    }
-
-    /**
-     * Sets the name of the cookie.
-     *
-     * @param name
-     *            The name of the cookie.
-     * @return This cookie.
-     */
-    public Cookie setName(final String name) {
-        this.name = name;
-        return this;
-    }
-
-    /**
-     * Sets the subset of URLs on the origin server to which this cookie
-     * applies.
-     *
-     * @param path
-     *            The subset of URLs on the origin server to which this cookie
-     *            applies.
-     * @return This cookie.
-     */
-    public Cookie setPath(final String path) {
-        this.path = path;
-        return this;
-    }
-
-    /**
-     * Sets the value indicating whether the user agent should use only secure
-     * means to send back this cookie.
-     *
-     * @param secure
-     *            {@code true} if the user agent should use only secure means to
-     *            send back this cookie.
-     * @return This cookie.
-     */
-    public Cookie setSecure(final Boolean secure) {
-        this.secure = secure;
-        return this;
-    }
-
-    /**
      * Sets the value of the cookie.
      *
-     * @param value
-     *            The value of the cookie.
-     * @return This cookie.
+     * @param value the value of the cookie
+     * @return this cookie
      */
-    public Cookie setValue(final String value) {
+    public Cookie setValue(String value) {
         this.value = value;
         return this;
     }
 
     /**
-     * Sets the version of the state management mechanism to which this cookie
-     * conforms.
+     * Get the domain for which the cookie is valid.
      *
-     * @param version
-     *            The version of the state management mechanism to which this
-     *            cookie conforms.
-     * @return This cookie.
+     * @return the domain for which the cookie is valid
      */
-    public Cookie setVersion(final Integer version) {
-        this.version = version;
-        return this;
+    public String getDomain() {
+        return getAttribute(DOMAIN_ATTR_NAME);
+    }
+
+    /**
+     * Set the domain for which the cookie is valid.
+     *
+     * @param domain the domain for which the cookie is valid
+     * @return this cookie
+     */
+    public Cookie setDomain(String domain) {
+        return putAttribute(DOMAIN_ATTR_NAME, domain);
+    }
+
+    /**
+     * Get {@code true} if the user agent should make the cookie inaccessible to client side script.
+     *
+     * @return {@code true} if the user agent should make the cookie inaccessible to client side script.
+     */
+    public Boolean isHttpOnly() {
+        return Boolean.parseBoolean(getAttribute(HTTPONLY_ATTR_NAME));
+    }
+
+    /**
+     * Set the value indicating whether the user agent should make the cookie inaccessible to client side script.
+     *
+     * @param httpOnly {@code true} if the user agent should make the cookie inaccessible to client side script
+     * @return this cookie
+     */
+    public Cookie setHttpOnly(boolean httpOnly) {
+        return putAttribute(HTTPONLY_ATTR_NAME, httpOnly ? "true" : null);
+    }
+
+    /**
+     * Get the lifetime of the cookie, expressed as the date and time of expiration.
+     *
+     * @return The lifetime of the cookie, expressed as the date and time of expiration.
+     */
+    public Date getExpires() {
+        return HeaderUtil.parseDate(getAttribute(EXPIRES_ATTR_NAME));
+    }
+
+    /**
+     * Set the lifetime of the cookie, expressed as the date and time of expiration.
+     *
+     * @param expires the lifetime of the cookie, expressed as the date and time of expiration
+     * @return this cookie
+     */
+    public Cookie setExpires(Date expires) {
+        return putAttribute(EXPIRES_ATTR_NAME, expires != null ? HeaderUtil.formatDate(expires) : null);
+    }
+
+    /**
+     * Get the lifetime of the cookie, expressed in seconds.
+     *
+     * @return the lifetime of the cookie, expressed in seconds
+     */
+    public Integer getMaxAge() {
+        String maxAge = getAttribute(MAX_AGE_ATTR_NAME);
+        return maxAge != null ? Integer.parseInt(maxAge) : null;
+    }
+
+    /**
+     * Set the lifetime of the cookie, expressed in seconds.
+     *
+     * @param maxAge the lifetime of the cookie, expressed in seconds
+     * @return this cookie
+     */
+    public Cookie setMaxAge(Integer maxAge) {
+        return putAttribute(MAX_AGE_ATTR_NAME, maxAge != null ? maxAge.toString() : null);
+    }
+
+    /**
+     * Get the subset of URLs on the origin server to which this cookie applies.
+     *
+     * @return the subset of URLs on the origin server to which this cookie applies
+     */
+    public String getPath() {
+        return getAttribute(PATH_ATTR_NAME);
+    }
+
+    /**
+     * Set the subset of URLs on the origin server to which this cookie applies.
+     *
+     * @param path the subset of URLs on the origin server to which this cookie applies
+     * @return this cookie
+     */
+    public Cookie setPath(String path) {
+        return putAttribute(PATH_ATTR_NAME, path);
+    }
+
+    /**
+     * Get flag indicating if the user agent should use only secure means to send back this cookie.
+     *
+     * @return {@code true} if the user agent should use only secure means to send back this cookie
+     */
+    public Boolean isSecure() {
+        return Boolean.parseBoolean(getAttribute(SECURE_ATTR_NAME));
+    }
+
+    /**
+     * Set the value indicating whether the user agent should use only secure means to send back this cookie.
+     *
+     * @param secure {@code true} if the user agent should use only secure means to send back this cookie
+     * @return this cookie
+     */
+    public Cookie setSecure(boolean secure) {
+        return putAttribute(SECURE_ATTR_NAME, secure ? "true" : null);
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("[");
-        if (name != null) {
-            builder.append("name=").append(name).append(" ");
-        }
-        if (value != null) {
-            builder.append("value=").append(value).append(" ");
-        }
-        if (comment != null) {
-            builder.append("comment=").append(comment).append(" ");
-        }
-        if (commentURL != null) {
-            builder.append("commentURL=").append(commentURL).append(" ");
-        }
-        if (discard != null) {
-            builder.append("discard=").append(discard).append(" ");
-        }
-        if (domain != null) {
-            builder.append("domain=").append(domain).append(" ");
-        }
-        if (expires != null) {
-            builder.append("expires=").append(expires).append(" ");
-        }
-        if (httpOnly != null) {
-            builder.append("httpOnly=").append(httpOnly).append(" ");
-        }
-        if (maxAge != null) {
-            builder.append("maxAge=").append(maxAge).append(" ");
-        }
-        if (path != null) {
-            builder.append("path=").append(path).append(" ");
-        }
-        if (port != null) {
-            builder.append("port=").append(port).append(" ");
-        }
-        if (secure != null) {
-            builder.append("secure=").append(secure).append(" ");
-        }
-        if (version != null) {
-            builder.append("version=").append(version);
-        }
-        builder.append("]");
-        return builder.toString();
-    }
-
-    private static boolean objectsAreEqual(final Object o1, final Object o2) {
-        if (o1 == null) {
-            return o2 == null;
-        } else {
-            return o1.equals(o2);
-        }
+        return String.format("Cookie[%s=%s,%s]", name, value, attributes);
     }
 
 }

@@ -12,15 +12,16 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.http.header;
 
-import static java.util.Collections.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.Date;
-
 import org.forgerock.http.protocol.Cookie;
 import org.testng.annotations.Test;
 
@@ -39,9 +40,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithNameAndValue() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE");
+        Cookie cookie = new Cookie("NAME", "VALUE");
 
         //When
         SetCookieHeader setCookieHeader = new SetCookieHeader(singletonList(cookie));
@@ -54,9 +53,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithExpires() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setExpires(EXPIRES_DATE);
 
         //When
@@ -70,9 +67,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithMaxAge() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setMaxAge(100);
 
         //When
@@ -86,9 +81,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithZeroMaxAge() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setMaxAge(0);
 
         //When
@@ -102,9 +95,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithPath() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setPath("/path");
 
         //When
@@ -118,9 +109,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithDomain() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setDomain("DOMAIN");
 
         //When
@@ -134,9 +123,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithSecure() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setSecure(true);
 
         //When
@@ -150,9 +137,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithHttpOnly() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setHttpOnly(true);
 
         //When
@@ -166,9 +151,7 @@ public class SetCookieHeaderTest {
     public void shouldCreateSetCookieHeaderWithAttributes() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setName("NAME")
-                .setValue("VALUE")
+        Cookie cookie = new Cookie("NAME", "VALUE")
                 .setExpires(EXPIRES_DATE)
                 .setMaxAge(100)
                 .setPath("/path")
@@ -180,16 +163,15 @@ public class SetCookieHeaderTest {
         SetCookieHeader setCookieHeader = new SetCookieHeader(singletonList(cookie));
 
         //Then
-        assertThat(setCookieHeader.getValues()).containsOnly("NAME=VALUE; Expires=" + EXPIRES_DATE_STRING
-                + "; Max-Age=100; Path=/path; Domain=DOMAIN; Secure; HttpOnly");
+        assertThat(setCookieHeader.getValues()).containsOnly("NAME=VALUE; Domain=DOMAIN" +
+                "; Expires=" + EXPIRES_DATE_STRING + "; HttpOnly; Max-Age=100; Path=/path; Secure");
     }
 
     @Test
     public void shouldCreateEmptySetCookieHeaderWhenCookieHasNoName() {
 
         //Given
-        Cookie cookie = new Cookie()
-                .setValue("VALUE")
+        Cookie cookie = new Cookie(null, "VALUE")
                 .setExpires(EXPIRES_DATE)
                 .setMaxAge(100)
                 .setPath("/path")
@@ -223,6 +205,7 @@ public class SetCookieHeaderTest {
         assertThat(cookie.getDomain()).isNull();
         assertThat(cookie.isSecure()).isFalse();
         assertThat(cookie.isHttpOnly()).isFalse();
+        assertThat(cookie.getAttributes().isEmpty());
     }
 
     @Test
@@ -238,12 +221,7 @@ public class SetCookieHeaderTest {
         Cookie cookie = setCookieHeader.getCookies().iterator().next();
         assertThat(cookie.getName()).isEqualTo("NAME");
         assertThat(cookie.getValue()).isEqualTo("VALUE");
-        assertThat(cookie.getExpires()).isEqualTo(EXPIRES_DATE);
-        assertThat(cookie.getMaxAge()).isNull();
-        assertThat(cookie.getPath()).isNull();
-        assertThat(cookie.getDomain()).isNull();
-        assertThat(cookie.isSecure()).isFalse();
-        assertThat(cookie.isHttpOnly()).isFalse();
+        assertThat(cookie.getAttributes()).isEqualTo(Collections.singletonMap("Expires", EXPIRES_DATE_STRING));
     }
 
     @Test
