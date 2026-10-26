@@ -12,12 +12,14 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2013-2015 ForgeRock AS.
+ * Portions Copyrighted 2026 Wren Security.
  */
 
 package org.forgerock.json.jose.jws.handlers;
 
 import org.forgerock.json.jose.exceptions.JwsSigningException;
 import org.forgerock.json.jose.jws.JwsAlgorithm;
+import org.forgerock.json.jose.jws.JwsAlgorithmType;
 import org.forgerock.json.jose.utils.Utils;
 import org.forgerock.util.Reject;
 
@@ -52,6 +54,7 @@ public class HmacSigningHandler implements SigningHandler {
      */
     @Override
     public byte[] sign(JwsAlgorithm algorithm, String data) {
+        validateAlgorithm(algorithm);
         return signWithHMAC(algorithm.getAlgorithm(), sharedSecret, data.getBytes(Utils.CHARSET));
     }
 
@@ -60,7 +63,18 @@ public class HmacSigningHandler implements SigningHandler {
      */
     @Override
     public byte[] sign(final JwsAlgorithm algorithm, final byte[] data) {
+        validateAlgorithm(algorithm);
         return signWithHMAC(algorithm.getAlgorithm(), sharedSecret, data);
+    }
+
+    /**
+     * Rejects any algorithm that is not an HMAC algorithm.
+     *
+     * @param algorithm The JwsAlgorithm to validate.
+     */
+    private void validateAlgorithm(JwsAlgorithm algorithm) {
+        Reject.ifNull(algorithm, "Algorithm must not be null.");
+        Reject.ifTrue(algorithm.getAlgorithmType() != JwsAlgorithmType.HMAC, "Not an HMAC algorithm.");
     }
 
     /**
@@ -101,6 +115,9 @@ public class HmacSigningHandler implements SigningHandler {
      */
     @Override
     public boolean verify(JwsAlgorithm algorithm, byte[] data, byte[] signature) {
+        if (algorithm == null || algorithm.getAlgorithmType() != JwsAlgorithmType.HMAC) {
+            return false;
+        }
         byte[] signed = signWithHMAC(algorithm.getAlgorithm(), sharedSecret, data);
         return MessageDigest.isEqual(signed, signature);
     }
