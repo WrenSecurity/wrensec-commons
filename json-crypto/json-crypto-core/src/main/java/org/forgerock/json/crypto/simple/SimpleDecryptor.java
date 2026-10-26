@@ -12,6 +12,7 @@
  * information: "Portions Copyrighted [year] [name of copyright owner]".
  *
  * Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyrighted 2026 Wren Security
  */
 
 package org.forgerock.json.crypto.simple;
@@ -80,6 +81,13 @@ public class SimpleDecryptor implements JsonDecryptor {
         try {
             JsonValue key = value.get("key").required();
             String cipher = value.get("cipher").required().asString();
+
+            // Require the salt/mac so ciphertext is always authenticated before decryption,
+            // preventing their removal from exposing an unauthenticated CBC padding oracle.
+            if (!value.isDefined("salt") || !value.isDefined("mac")) {
+                throw new GeneralSecurityException("Missing authentication tag");
+            }
+
             Key symmetricKey;
             if (key.isString()) {
                 symmetricKey = select(key.asString());
@@ -91,23 +99,21 @@ public class SimpleDecryptor implements JsonDecryptor {
                 symmetricKey = new SecretKeySpec(asymmetric.doFinal(ciphertext), cipher.split("/", 2)[0]);
             }
 
-            if (value.isDefined("salt")) {
-                final byte[] macTag = Base64.decode(value.get("mac").required().asString());
-                HKDFKeyGenerator.HKDFMasterKey masterKey = HKDFKeyGenerator.extractMasterKey(symmetricKey.getEncoded(),
-                        Base64.decode(value.get("salt").required().asString()));
+            final byte[] macTag = Base64.decode(value.get("mac").required().asString());
+            HKDFKeyGenerator.HKDFMasterKey masterKey = HKDFKeyGenerator.extractMasterKey(symmetricKey.getEncoded(),
+                    Base64.decode(value.get("salt").required().asString()));
 
-                Key macKey = HKDFKeyGenerator.expandKey(masterKey, SimpleEncryptor.MAC_ALGORITHM,
-                        SimpleEncryptor.MAC_KEY_SIZE);
-                final Map<String, Object> map = new TreeMap<>(value.asMap());
-                map.remove("mac");
-                final byte[] computedMacTag = SimpleEncryptor.mac(map, macKey);
-                if (!MessageDigest.isEqual(macTag, computedMacTag)) {
-                    throw new GeneralSecurityException("Invalid tag");
-                }
-
-                symmetricKey = HKDFKeyGenerator.expandKey(masterKey, symmetricKey.getAlgorithm(),
-                        SimpleEncryptor.ASYMMETRIC_AES_KEY_SIZE);
+            Key macKey = HKDFKeyGenerator.expandKey(masterKey, SimpleEncryptor.MAC_ALGORITHM,
+                    SimpleEncryptor.MAC_KEY_SIZE);
+            final Map<String, Object> map = new TreeMap<>(value.asMap());
+            map.remove("mac");
+            final byte[] computedMacTag = SimpleEncryptor.mac(map, macKey);
+            if (!MessageDigest.isEqual(macTag, computedMacTag)) {
+                throw new GeneralSecurityException("Invalid tag");
             }
+
+            symmetricKey = HKDFKeyGenerator.expandKey(masterKey, symmetricKey.getAlgorithm(),
+                    SimpleEncryptor.ASYMMETRIC_AES_KEY_SIZE);
 
             Cipher symmetric = Cipher.getInstance(cipher);
             String iv = value.get("iv").asString();
