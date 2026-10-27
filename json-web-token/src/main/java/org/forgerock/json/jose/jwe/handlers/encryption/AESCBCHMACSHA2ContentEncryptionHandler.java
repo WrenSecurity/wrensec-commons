@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.json.jose.jwe.handlers.encryption;
@@ -97,18 +98,13 @@ final class AESCBCHMACSHA2ContentEncryptionHandler extends ContentEncryptionHand
 
             final byte[] tag = Arrays.copyOf(mac.doFinal(), method.getKeyOffset());
 
-            final boolean macValid = Utils.constantEquals(tag, cipherText.getAuthenticationTag());
-
-            final Cipher cipher = Cipher.getInstance(method.getTransformation());
-            cipher.init(Cipher.DECRYPT_MODE, encKey, new IvParameterSpec(iv));
-            final byte[] plainText = cipher.doFinal(cipherText.getCiphertext());
-
-            if (!macValid) {
+            if (!Utils.constantEquals(tag, cipherText.getAuthenticationTag())) {
                 throw new GeneralSecurityException("MAC verification failed");
             }
 
-            return plainText;
-
+            final Cipher cipher = Cipher.getInstance(method.getTransformation());
+            cipher.init(Cipher.DECRYPT_MODE, encKey, new IvParameterSpec(iv));
+            return cipher.doFinal(cipherText.getCiphertext());
         } catch (GeneralSecurityException ex) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Decryption failed: " + ex, ex);
