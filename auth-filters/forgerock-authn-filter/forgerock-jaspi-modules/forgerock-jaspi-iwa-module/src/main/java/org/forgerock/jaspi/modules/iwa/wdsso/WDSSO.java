@@ -26,7 +26,7 @@
  * $Id: WindowsDesktopSSO.java,v 1.7 2009/07/28 19:40:45 beomsuk Exp $
  *
  * Portions Copyrighted 2011-2016 ForgeRock AS.
- * Portions Copyright 2024 Wren Security
+ * Portions Copyright 2024-2026 Wren Security
  */
 
 package org.forgerock.jaspi.modules.iwa.wdsso;
@@ -78,8 +78,6 @@ public class WDSSO {
         return userPrincipal;
     }
 
-    private static String user;
-
     /**
      * Process Windows SSO login attempt.
      *
@@ -107,8 +105,9 @@ public class WDSSO {
         }
 
         // authenticate the user with the kerberos token
+        String user;
         try {
-            authenticateToken(kerberosToken);
+            user = authenticateToken(kerberosToken);
         } catch (PrivilegedActionException pe) {
             Exception e = extractException(pe);
             if (e instanceof GSSException) {
@@ -117,7 +116,7 @@ public class WDSSO {
                     LOG.debug("IWA WDSSO: Credential expired. Re-establish credential... {}", e.getMessage());
                     serviceLogin();
                     try {
-                        authenticateToken(kerberosToken);
+                        user = authenticateToken(kerberosToken);
                         LOG.debug("IWA WDSSO: Authentication succeeded with new cred.");
                     } catch (Exception ee) {
                         LOG.error("IWA WDSSO: Authentication failed with new cred. {}", e.getMessage(), e);
@@ -127,6 +126,9 @@ public class WDSSO {
                     LOG.error("IWA WDSSO: Authentication failed with GSSException. {}", e.getMessage(), e);
                     throw new RuntimeException();
                 }
+            } else {
+                LOG.error("IWA WDSSO: Authentication failed with exception. {}", e.getMessage(), e);
+                throw e;
             }
         } catch (GSSException e) {
             int major = e.getMajor();
@@ -134,7 +136,7 @@ public class WDSSO {
                 LOG.debug("IWA WDSSO: Credential expired. Re-establish credential... {}", e.getMessage());
                 serviceLogin();
                 try {
-                    authenticateToken(kerberosToken);
+                    user = authenticateToken(kerberosToken);
                     LOG.debug("IWA WDSSO: Authentication succeeded with new cred.");
                 } catch (Exception ee) {
                     LOG.debug("IWA WDSSO: Authentication failed with new cred. {}", e.getMessage());
@@ -151,9 +153,9 @@ public class WDSSO {
         return user;
     }
 
-    private void authenticateToken(final byte[] kerberosToken) throws Exception {
-        Subject.doAs(serviceSubject, new PrivilegedExceptionAction() {
-            public Object run() throws Exception {
+    private String authenticateToken(final byte[] kerberosToken) throws Exception {
+        return Subject.doAs(serviceSubject, new PrivilegedExceptionAction<String>() {
+            public String run() throws Exception {
                 GSSContext context = GSSManager.getInstance().createContext((GSSCredential) null);
                 LOG.debug("IWA WDSSO: GSSContext created");
                 byte[] outToken = context.acceptSecContext(
@@ -165,14 +167,13 @@ public class WDSSO {
                 if (!context.isEstablished()) {
                     LOG.debug("IWA WDSSO: Cannot establish context!");
                     throw new RuntimeException();
-                } else {
-                    LOG.debug("IWA WDSSO: Context established");
-                    GSSName user = context.getSrcName();
-                    WDSSO.user = getUserName(user.toString());
-                    LOG.debug("IWA WDSSO: Found user! {}", WDSSO.user);
                 }
+                LOG.debug("IWA WDSSO: Context established");
+                GSSName srcName = context.getSrcName();
+                String user = getUserName(srcName.toString());
+                LOG.debug("IWA WDSSO: Found user! {}", user);
                 context.dispose();
-                return null;
+                return user;
             }
         });
     }
