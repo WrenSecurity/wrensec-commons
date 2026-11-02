@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security
  */
 
 package org.forgerock.http.protocol;
@@ -208,7 +209,7 @@ public class HeadersTest {
         headers.put("Cookie", asList("Four", "Five", "Six"));
 
         // Then
-        assertThat(headers.get("Cookie").getValues()).containsExactly("Four=null; Five=null; Six=null");
+        assertThat(headers.get("Cookie").getValues()).containsExactly("Four=; Five=; Six=");
     }
 
     @Test
