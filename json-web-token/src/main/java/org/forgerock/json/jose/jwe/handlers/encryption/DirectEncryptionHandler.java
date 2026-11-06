@@ -12,13 +12,18 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.json.jose.jwe.handlers.encryption;
 
 import java.security.Key;
+import java.util.Arrays;
+
+import javax.crypto.SecretKey;
 
 import org.forgerock.json.jose.exceptions.JweDecryptionException;
+import org.forgerock.json.jose.exceptions.JweEncryptionException;
 import org.forgerock.json.jose.jwe.EncryptionMethod;
 import org.forgerock.json.jose.jwe.JweEncryption;
 import org.forgerock.util.annotations.VisibleForTesting;
@@ -27,7 +32,9 @@ import org.forgerock.util.annotations.VisibleForTesting;
  * Supports direct encryption using a shared symmetric key.
  */
 public final class DirectEncryptionHandler implements EncryptionHandler {
+
     private final ContentEncryptionHandler contentEncryptionHandler;
+    private final int keyLength;
 
     /**
      * Constructs the direct encryption handler for the given content encryption method.
@@ -35,12 +42,13 @@ public final class DirectEncryptionHandler implements EncryptionHandler {
      * @param encryptionMethod the content encryption method.
      */
     public DirectEncryptionHandler(final EncryptionMethod encryptionMethod) {
-        this(ContentEncryptionHandler.getInstance(encryptionMethod));
+        this(ContentEncryptionHandler.getInstance(encryptionMethod), encryptionMethod.getKeySize() / 8);
     }
 
     @VisibleForTesting
-    DirectEncryptionHandler(ContentEncryptionHandler contentEncryptionHandler) {
+    DirectEncryptionHandler(ContentEncryptionHandler contentEncryptionHandler, int keyLength) {
         this.contentEncryptionHandler = contentEncryptionHandler;
+        this.keyLength = keyLength;
     }
 
     @Override
@@ -63,6 +71,9 @@ public final class DirectEncryptionHandler implements EncryptionHandler {
     @Override
     public JweEncryption encryptPlaintext(final Key contentEncryptionKey, final byte[] initialisationVector,
             final byte[] plaintext, final byte[] additionalAuthenticatedData) {
+        if (!isValidSharedKey(contentEncryptionKey)) {
+            throw new JweEncryptionException("Direct encryption requires a symmetric key of " + keyLength + " bytes");
+        }
         return contentEncryptionHandler.encrypt(contentEncryptionKey, initialisationVector, plaintext,
                 additionalAuthenticatedData);
     }
@@ -70,6 +81,9 @@ public final class DirectEncryptionHandler implements EncryptionHandler {
     @Override
     public Key decryptContentEncryptionKey(final Key key, final byte[] encryptedContentEncryptionKey) {
         if (encryptedContentEncryptionKey != null && encryptedContentEncryptionKey.length != 0) {
+            throw new JweDecryptionException();
+        }
+        if (!isValidSharedKey(key)) {
             throw new JweDecryptionException();
         }
         return key;
@@ -81,5 +95,25 @@ public final class DirectEncryptionHandler implements EncryptionHandler {
             final byte[] authenticationTag, final byte[] additionalAuthenticatedData) {
         return contentEncryptionHandler.decrypt(contentEncryptionKey, initialisationVector,
                 new JweEncryption(ciphertext, authenticationTag), additionalAuthenticatedData);
+    }
+
+    /**
+     * Checks that the key can be used directly as the Content Encryption Key.
+     * It must be a symmetric key whose raw encoding has exactly the length required by the content encryption method.
+     * The length is not checked for keys that do not expose their key material (e.g. keys held in an HSM).
+     */
+    private boolean isValidSharedKey(final Key key) {
+        if (!(key instanceof SecretKey)) {
+            return false;
+        }
+        final byte[] encoded = key.getEncoded();
+        if (encoded == null || encoded.length == 0) {
+            return true;
+        }
+        try {
+            return encoded.length == keyLength;
+        } finally {
+            Arrays.fill(encoded, (byte) 0);
+        }
     }
 }

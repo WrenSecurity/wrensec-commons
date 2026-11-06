@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2015-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.json.jose.jwe;
@@ -209,6 +210,34 @@ public class EncryptedJwtTest {
 
         // Then
         assertThat(result.getClaimsSet().build()).isEqualTo(claims.build());
+    }
+
+    @Test(expectedExceptions = JweDecryptionException.class)
+    public void shouldRejectDirectEncryptionForgedWithPrivateKeyEncoding() {
+        // Given - an attacker encrypts with the predictable prefix of the recipient's PKCS#8 private key encoding
+        byte[] forgedKey = Arrays.copyOf(rsaKeyPair.getPrivate().getEncoded(), 32);
+        JwtClaimsSet claims = new JwtClaimsSet();
+        claims.setSubject("attacker");
+        String jwt = jbf.jwe(new SecretKeySpec(forgedKey, "AES")).headers().alg(JweAlgorithm.DIRECT)
+                .enc(EncryptionMethod.A128CBC_HS256).done().claims(claims).build();
+
+        // When - the recipient decrypts with its RSA private key
+        EncryptedJwt result = jwtReconstruction.reconstructJwt(jwt, EncryptedJwt.class);
+        result.decrypt(rsaKeyPair.getPrivate());
+    }
+
+    @Test(expectedExceptions = JweDecryptionException.class)
+    public void shouldRejectDirectEncryptionWithWrongKeyLength() {
+        // Given - a token encrypted with the correct 32 byte A128CBC-HS256 key
+        byte[] keyData = new byte[32];
+        Arrays.fill(keyData, (byte) 7);
+        String jwt = jbf.jwe(new SecretKeySpec(keyData, "AES")).headers().alg(JweAlgorithm.DIRECT)
+                .enc(EncryptionMethod.A128CBC_HS256).done().claims(new JwtClaimsSet()).build();
+
+        // When - decrypting with a 48 byte key that starts with the correct key (the trailing bytes would be
+        // ignored by the content encryption handler, so only the key length check rejects it)
+        EncryptedJwt result = jwtReconstruction.reconstructJwt(jwt, EncryptedJwt.class);
+        result.decrypt(new SecretKeySpec(Arrays.copyOf(keyData, 48), "AES"));
     }
 
     @Test
