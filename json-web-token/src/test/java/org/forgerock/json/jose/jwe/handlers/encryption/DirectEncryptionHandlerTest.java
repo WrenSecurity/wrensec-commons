@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.json.jose.jwe.handlers.encryption;
@@ -22,10 +23,13 @@ import static org.mockito.Mockito.verify;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.KeyPairGenerator;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.forgerock.json.jose.exceptions.JweDecryptionException;
+import org.forgerock.json.jose.exceptions.JweEncryptionException;
 import org.forgerock.json.jose.jwe.JweEncryption;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -42,7 +46,7 @@ public class DirectEncryptionHandlerTest {
     @BeforeMethod
     public void init() {
         MockitoAnnotations.initMocks(this);
-        directEncryptionHandler = new DirectEncryptionHandler(mockContentEncryptionHandler);
+        directEncryptionHandler = new DirectEncryptionHandler(mockContentEncryptionHandler, 16);
     }
 
     @Test
@@ -123,5 +127,59 @@ public class DirectEncryptionHandlerTest {
         // Then
         verify(mockContentEncryptionHandler).decrypt(cek, iv, new JweEncryption(cipherText, tag), aad);
         assertThat(result).isSameAs(plainText);
+    }
+
+    @Test(expectedExceptions = JweDecryptionException.class)
+    public void shouldRejectAsymmetricKeyForDecryption() throws Exception {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048);
+        directEncryptionHandler.decryptContentEncryptionKey(generator.generateKeyPair().getPrivate(), new byte[0]);
+    }
+
+    @Test(expectedExceptions = JweDecryptionException.class)
+    public void shouldRejectSharedKeyOfWrongLengthForDecryption() {
+        Key sharedKey = new SecretKeySpec(new byte[32], "AES");
+        directEncryptionHandler.decryptContentEncryptionKey(sharedKey, new byte[0]);
+    }
+
+    @Test(expectedExceptions = JweEncryptionException.class)
+    public void shouldRejectAsymmetricKeyForEncryption() throws Exception {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048);
+        directEncryptionHandler.encryptPlaintext(generator.generateKeyPair().getPublic(), new byte[12],
+                new byte[0], new byte[0]);
+    }
+
+    @Test(expectedExceptions = JweEncryptionException.class)
+    public void shouldRejectSharedKeyOfWrongLengthForEncryption() {
+        Key sharedKey = new SecretKeySpec(new byte[24], "AES");
+        directEncryptionHandler.encryptPlaintext(sharedKey, new byte[12], new byte[0], new byte[0]);
+    }
+
+    @Test
+    public void shouldAcceptSharedKeyWithoutExposedKeyMaterial() {
+        // Given - e.g. a non-extractable key held in an HSM
+        Key sharedKey = new SecretKey() {
+            @Override
+            public String getAlgorithm() {
+                return "AES";
+            }
+
+            @Override
+            public String getFormat() {
+                return null;
+            }
+
+            @Override
+            public byte[] getEncoded() {
+                return null;
+            }
+        };
+
+        // When
+        Key result = directEncryptionHandler.decryptContentEncryptionKey(sharedKey, new byte[0]);
+
+        // Then
+        assertThat(result).isSameAs(sharedKey);
     }
 }
