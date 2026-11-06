@@ -19,7 +19,6 @@
 package org.forgerock.http.header;
 
 import static java.util.Collections.singletonList;
-import static org.forgerock.http.header.HeaderUtil.parseMultiValuedHeader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +39,9 @@ public class CookieHeader extends Header {
     private static CookieHeader valueOf(final List<String> values) {
         List<Cookie> cookies = new ArrayList<>(values.size());
         for (String s1 : values) {
+            if (s1 == null) {
+                continue;
+            }
             for (String s2 : HeaderUtil.split(s1, ';')) {
                 String[] nvp = s2.split("=", 2);
                 String name = nvp[0].trim();
@@ -66,7 +68,10 @@ public class CookieHeader extends Header {
      * @return The parsed header.
      */
     public static CookieHeader valueOf(final Request message) {
-        return valueOf(parseMultiValuedHeader(message, NAME));
+        if (message == null || !message.getHeaders().containsKey(NAME)) {
+            return new CookieHeader();
+        }
+        return valueOf(message.getHeaders().get(NAME).getValues());
     }
 
     /**
@@ -77,7 +82,7 @@ public class CookieHeader extends Header {
      * @return The parsed header.
      */
     public static CookieHeader valueOf(final String string) {
-        return valueOf(parseMultiValuedHeader(string));
+        return valueOf(string != null ? singletonList(string) : Collections.<String>emptyList());
     }
 
     /** The name of this header. */

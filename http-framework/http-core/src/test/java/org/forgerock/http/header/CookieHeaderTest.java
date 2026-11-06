@@ -22,6 +22,8 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
+import java.util.Arrays;
+
 import org.forgerock.http.protocol.Cookie;
 import org.forgerock.http.protocol.Request;
 import org.forgerock.http.protocol.Response;
@@ -137,6 +139,31 @@ public class CookieHeaderTest {
         assertThat(ch.getCookies()).extracting(Cookie::getName).containsExactly("a", "b", "c", "d");
         assertThat(ch.getCookies()).extracting(Cookie::getValue).containsExactly("\"x=y\"", "", "\"\"", "1");
         assertThat(ch.getValues()).containsOnly("a=\"x=y\"; b=; c=\"\"; d=1");
+    }
+
+    @Test
+    public void testCookieHeaderFromStringDoesNotSplitOnComma() {
+        final CookieHeader ch = CookieHeader.valueOf("foo=x,__Host-session=evil; bar=y");
+        assertThat(ch.getCookies()).extracting(Cookie::getName).containsExactly("bar");
+    }
+
+    @Test
+    public void testCookieHeaderFromRequestDoesNotSplitOnComma() {
+        final Request putRequest = new Request();
+        putRequest.getHeaders().put(NAME, "foo=x,__Host-session=evil; bar=y");
+        assertThat(CookieHeader.valueOf(putRequest).getCookies()).extracting(Cookie::getName).containsExactly("bar");
+
+        final Request addRequest = new Request();
+        addRequest.getHeaders().add(NAME, "foo=x,__Host-session=evil; bar=y");
+        assertThat(CookieHeader.valueOf(addRequest).getCookies()).extracting(Cookie::getName).containsExactly("bar");
+        assertNull(addRequest.getCookies().get("__Host-session"));
+    }
+
+    @Test
+    public void testCookieHeaderFromRequestWithMultipleHeaderFields() {
+        final Request request = new Request();
+        request.getHeaders().add(NAME, Arrays.asList("a=1; b=2", "c=3"));
+        assertThat(CookieHeader.valueOf(request).getCookies()).extracting(Cookie::getName).containsExactly("a", "b", "c");
     }
 
     @Test
