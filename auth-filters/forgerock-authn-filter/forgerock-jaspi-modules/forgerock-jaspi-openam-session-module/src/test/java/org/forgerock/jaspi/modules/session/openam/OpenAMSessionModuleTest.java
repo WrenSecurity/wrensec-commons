@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2014-2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.jaspi.modules.session.openam;
@@ -669,7 +670,7 @@ public class OpenAMSessionModuleTest {
         given(messageInfo.getRequest()).willReturn(request);
         request.getHeaders().put("OPENAM_SSO_TOKEN_COOKIE_NAME", null);
         request.getHeaders().put(
-                CookieHeader.valueOf("NOT_SSO_COOKIE_NAME=cookieVal,OPENAM_SSO_TOKEN_COOKIE_NAME=SSO_TOKEN_ID"));
+                CookieHeader.valueOf("NOT_SSO_COOKIE_NAME=cookieVal; OPENAM_SSO_TOKEN_COOKIE_NAME=SSO_TOKEN_ID"));
         mockHttpRequests(Pair.of("https://OPENAM_DEPLOYMENT_URI/json/sessions/SSO_TOKEN_ID?_action=validate",
                         restValidateResponse),
                 Pair.of("https://OPENAM_DEPLOYMENT_URI/json/REALM/users/UID?_fields=OPENAM_USER_ATTRIBUTE",

@@ -13,6 +13,7 @@
  *
  * Copyright 2010–2011 ApexIdentity Inc.
  * Portions Copyright 2011-2015 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 
 package org.forgerock.http.protocol;
@@ -70,7 +71,7 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
         if (key instanceof String) {
             final String s = (String) key;
             for (final Cookie cookie : CookieHeader.valueOf(request).getCookies()) {
-                if (s.equalsIgnoreCase(cookie.getName())) {
+                if (s.equals(cookie.getName())) {
                     list.add(cookie);
                 }
             }
@@ -104,7 +105,7 @@ public class RequestCookies extends AbstractMap<String, List<Cookie>> implements
     }
 
     private Map<String, List<Cookie>> cookies() {
-        final Map<String, List<Cookie>> cookies = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        final Map<String, List<Cookie>> cookies = new TreeMap<>();
         for (final Cookie cookie : CookieHeader.valueOf(request).getCookies()) {
             List<Cookie> list = cookies.get(cookie.getName());
             if (list == null) {
