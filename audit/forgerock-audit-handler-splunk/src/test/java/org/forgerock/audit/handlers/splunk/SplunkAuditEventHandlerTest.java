@@ -12,7 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
- * Portions Copyright 2018 Wren Security.
+ * Portions Copyright 2018-2026 Wren Security.
  */
 
 package org.forgerock.audit.handlers.splunk;
@@ -72,6 +72,10 @@ public final class SplunkAuditEventHandlerTest {
 
     @BeforeMethod
     public void setUp() {
+        splunkHandler = createHandler(false);
+    }
+
+    private SplunkAuditEventHandler createHandler(boolean useSSL) {
         BufferingConfiguration bufferingConfiguration = new BufferingConfiguration();
         bufferingConfiguration.setMaxBatchedEvents(5);
         bufferingConfiguration.setMaxSize(1024);
@@ -80,7 +84,7 @@ public final class SplunkAuditEventHandlerTest {
         ConnectionConfiguration connectionConfiguration = new ConnectionConfiguration();
         connectionConfiguration.setPort(8088);
         connectionConfiguration.setHost("localhost");
-        connectionConfiguration.setUseSSL(false);
+        connectionConfiguration.setUseSSL(useSSL);
 
         SplunkAuditEventHandlerConfiguration configuration = new SplunkAuditEventHandlerConfiguration();
         configuration.setAuthzToken("abc-def-ghi");
@@ -105,7 +109,7 @@ public final class SplunkAuditEventHandlerTest {
 
         handler = mock(Handler.class);
         Client client = new Client(handler);
-        splunkHandler = new SplunkAuditEventHandler(configuration, topicsMetaData, publisherFactory, client);
+        return new SplunkAuditEventHandler(configuration, topicsMetaData, publisherFactory, client);
     }
 
     @Test
@@ -193,6 +197,24 @@ public final class SplunkAuditEventHandlerTest {
         assertThat(request.getHeaders().get("Authorization").getFirstValue()).isEqualTo("Splunk abc-def-ghi");
         assertThat(request.getHeaders().get("X-Splunk-Request-Channel").getFirstValue()).isNotEmpty();
         assertThat(request.getMethod()).isEqualTo("POST");
+    }
+
+    @Test
+    public void batchPayloadPostedToHttpsEndpointWhenSslIsEnabled() throws BatchException {
+        // Given
+        splunkHandler = createHandler(true);
+        Response response = new Response(Status.OK);
+        Promise<Response, NeverThrowsException> responsePromise = Response.newResponsePromise(response);
+        when(handler.handle(isA(Context.class), isA(Request.class))).thenReturn(responsePromise);
+
+        // When
+        splunkHandler.publishBatch("{ \"_id\": \"123\" }").getOrThrowUninterruptibly();
+
+        // Then
+        ArgumentCaptor<Request> requestCapture = ArgumentCaptor.forClass(Request.class);
+        verify(handler).handle(isA(Context.class), requestCapture.capture());
+        assertThat(requestCapture.getValue().getUri().toString())
+                .isEqualTo("https://localhost:8088/services/collector/raw");
     }
 
     @Test(expectedExceptions = BatchException.class)

@@ -12,6 +12,7 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 package org.forgerock.audit.handlers.splunk;
 
@@ -119,10 +120,10 @@ public final class SplunkAuditEventHandler extends AuditEventHandlerBase impleme
         channelId = UUID.randomUUID().toString();
 
         final ConnectionConfiguration connection = configuration.getConnection();
-        serviceUrl = connection.isUseSSL() ? "https://" : "http://"
-                + configuration.getConnection().getHost()
+        serviceUrl = (connection.isUseSSL() ? "https://" : "http://")
+                + connection.getHost()
                 + ':'
-                + configuration.getConnection().getPort()
+                + connection.getPort()
                 + "/services/collector/raw";
 
         final BufferingConfiguration bufferingConfiguration = configuration.getBuffering();
