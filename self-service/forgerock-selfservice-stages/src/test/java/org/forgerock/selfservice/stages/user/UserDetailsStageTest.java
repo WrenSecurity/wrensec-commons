@@ -30,6 +30,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import org.forgerock.json.JsonPointer;
 import org.forgerock.json.JsonValue;
 import org.forgerock.json.JsonValueException;
@@ -165,6 +168,51 @@ public final class UserDetailsStageTest {
         assertThat(userJson).stringAt("kba/0/answer").isEqualTo("a1");
         assertThat(userJson).stringAt("kba/1/selectedQuestion").isEqualTo(KBA_QUESTION_2);
         assertThat(userJson).stringAt("kba/1/answer").isEqualTo("a2");
+    }
+
+    @Test(expectedExceptions = BadRequestException.class, expectedExceptionsMessageRegExp = "Field not allowed: roles")
+    public void testAdvanceRejectsFieldOutsideAllowList() throws Exception {
+        // Given
+        config.setAllowedFields(new HashSet<>(Arrays.asList("givenName", "sn", "password", IDENTITY_EMAIL_FIELD)));
+        JsonValue input = newJsonValueInputsUserWithEmail();
+        input.put(new JsonPointer("user/roles"), array("openidm-admin"));
+        given(context.getInput()).willReturn(input);
+
+        // When
+        userDetailsStage.advance(context, config);
+    }
+
+    @Test
+    public void testAdvanceAcceptsAllowListedFields() throws Exception {
+        // Given
+        config.setAllowedFields(new HashSet<>(Arrays.asList("givenName", "sn", "password", IDENTITY_EMAIL_FIELD)));
+        given(context.getInput()).willReturn(newJsonValueInputsUserWithEmail());
+
+        // When
+        userDetailsStage.advance(context, config);
+
+        // Then
+        ArgumentCaptor<JsonValue> userArgumentCaptor = ArgumentCaptor.forClass(JsonValue.class);
+        verify(context, times(2)).putState(eq(USER_FIELD), userArgumentCaptor.capture());
+        JsonValue userJson = userArgumentCaptor.getValue();
+        assertThat(userJson).stringAt("givenName").isEqualTo("testUser");
+        assertThat(userJson).stringAt(IDENTITY_EMAIL_FIELD).isEqualTo(TEST_EMAIL_ID);
+    }
+
+    @Test
+    public void testAdvanceAcceptsAnyFieldWithoutAllowList() throws Exception {
+        // Given
+        JsonValue input = newJsonValueInputsUserWithEmail();
+        input.put(new JsonPointer("user/_id"), "custom");
+        given(context.getInput()).willReturn(input);
+
+        // When
+        userDetailsStage.advance(context, config);
+
+        // Then
+        ArgumentCaptor<JsonValue> userArgumentCaptor = ArgumentCaptor.forClass(JsonValue.class);
+        verify(context, times(2)).putState(eq(USER_FIELD), userArgumentCaptor.capture());
+        assertThat(userArgumentCaptor.getValue()).stringAt("_id").isEqualTo("custom");
     }
 
     private UserDetailsConfig newUserDetailsConfig() {

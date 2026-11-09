@@ -17,6 +17,7 @@
 package org.forgerock.selfservice.stages.user;
 
 import java.util.Objects;
+import java.util.Set;
 
 import org.forgerock.selfservice.core.config.StageConfig;
 
@@ -33,6 +34,8 @@ public final class UserDetailsConfig implements StageConfig {
     public static final String NAME = "userDetails";
 
     private String identityEmailField;
+
+    private Set<String> allowedFields;
 
     /**
      * Gets the field name for the identity email address.
@@ -53,6 +56,28 @@ public final class UserDetailsConfig implements StageConfig {
      */
     public UserDetailsConfig setIdentityEmailField(String identityEmailField) {
         this.identityEmailField = identityEmailField;
+        return this;
+    }
+
+    /**
+     * Gets the names of the top-level user fields that may be supplied in the stage input.
+     * When {@code null}, any field is accepted.
+     *
+     * @return the allowed field names, or {@code null} if not configured
+     */
+    public Set<String> getAllowedFields() {
+        return allowedFields;
+    }
+
+    /**
+     * Sets the names of the top-level user fields that may be supplied in the stage input.
+     * Any other field submitted in the user object is rejected.
+     *
+     * @param allowedFields the allowed field names, or {@code null} to accept any field
+     * @return this config instance
+     */
+    public UserDetailsConfig setAllowedFields(Set<String> allowedFields) {
+        this.allowedFields = allowedFields == null ? null : Set.copyOf(allowedFields);
         return this;
     }
 
@@ -79,12 +104,13 @@ public final class UserDetailsConfig implements StageConfig {
         UserDetailsConfig that = (UserDetailsConfig) o;
         return Objects.equals(getName(), that.getName())
                 && Objects.equals(getProgressStageClassName(), that.getProgressStageClassName())
-                && Objects.equals(identityEmailField, that.identityEmailField);
+                && Objects.equals(identityEmailField, that.identityEmailField)
+                && Objects.equals(allowedFields, that.allowedFields);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getProgressStageClassName(), identityEmailField);
+        return Objects.hash(getName(), getProgressStageClassName(), identityEmailField, allowedFields);
     }
 
 }
