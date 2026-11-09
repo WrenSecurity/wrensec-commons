@@ -41,5 +41,6 @@ public final class UserDetailsConfigTest {
         assertThat(config).isInstanceOf(UserDetailsConfig.class);
         UserDetailsConfig kbaConfig = (UserDetailsConfig) config;
         assertThat(kbaConfig.getIdentityEmailField()).isEqualTo("mail");
+        assertThat(kbaConfig.getAllowedFields()).containsOnly("userName", "givenName", "sn", "mail", "password");
     }
 }

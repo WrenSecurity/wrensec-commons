@@ -31,6 +31,7 @@ import org.forgerock.selfservice.core.StageResponse;
 import org.forgerock.selfservice.core.util.RequirementsBuilder;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Stage is responsible for request a new user json representation.
@@ -54,6 +55,7 @@ public final class UserDetailsStage implements ProgressStage<UserDetailsConfig> 
     public StageResponse advance(ProcessContext context, UserDetailsConfig config) throws ResourceException {
         JsonValue user = context.getInput().get("user").required();
 
+        validateFields(config, user);
         processEmail(context, config, user);
 
         JsonValue userState = ensureUserInContext(context);
@@ -62,6 +64,18 @@ public final class UserDetailsStage implements ProgressStage<UserDetailsConfig> 
         context.putState(USER_FIELD, userState);
 
         return StageResponse.newBuilder().build();
+    }
+
+    private void validateFields(UserDetailsConfig config, JsonValue user) throws BadRequestException {
+        Set<String> allowedFields = config.getAllowedFields();
+        if (allowedFields == null) {
+            return;
+        }
+        for (String key : user.keys()) {
+            if (!allowedFields.contains(key)) {
+                throw new BadRequestException("Field not allowed: " + key);
+            }
+        }
     }
 
     private void processEmail(ProcessContext context, UserDetailsConfig config, JsonValue user)

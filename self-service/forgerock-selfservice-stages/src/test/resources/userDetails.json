@@ -1,4 +1,5 @@
 {
   "name" : "userDetails",
-  "identityEmailField" : "mail"
+  "identityEmailField" : "mail",
+  "allowedFields" : ["userName", "givenName", "sn", "mail", "password"]
 }
