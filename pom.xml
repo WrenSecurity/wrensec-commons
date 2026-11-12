@@ -90,6 +90,7 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <pgpVerifyKeysVersion>1.9.12</pgpVerifyKeysVersion>
+        <sonar.projectName>wrensec-commons</sonar.projectName>
 
         <activation-api.version>2.1.4</activation-api.version>
         <assertj.version>3.27.7</assertj.version>
