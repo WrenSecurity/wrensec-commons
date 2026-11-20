@@ -30,7 +30,7 @@
     <description>Swagger UI assets packaged as a WAR overlay (powered by WebJars).</description>
 
     <properties>
-        <swagger-ui.version>5.32.0</swagger-ui.version>
+        <swagger-ui.version>5.35.1</swagger-ui.version>
     </properties>
 
     <dependencies>
