@@ -35,6 +35,6 @@
 
     <properties>
         <mavenVersion>3.3.1</mavenVersion>
-        <plexusUtilsVersion>3.5.0</plexusUtilsVersion>
+        <plexusUtilsVersion>3.6.4</plexusUtilsVersion>
     </properties>
 </project>

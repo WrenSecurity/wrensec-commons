@@ -86,6 +86,31 @@
         <version>0.9.4</version>
       </dependency>
 
+      <!-- Override vulnerable versions pulled by restito -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.minidev</groupId>
+        <artifactId>json-smart</artifactId>
+        <version>2.6.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.minidev</groupId>
+        <artifactId>accessors-smart</artifactId>
+        <version>2.6.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.mina</groupId>
+        <artifactId>mina-core</artifactId>
+        <version>2.1.15</version>
+      </dependency>
+
       <dependency>
         <groupId>org.wrensecurity.http</groupId>
         <artifactId>binding-test-utils</artifactId>
