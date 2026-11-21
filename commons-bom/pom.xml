@@ -27,7 +27,7 @@
 
     <groupId>org.wrensecurity.commons</groupId>
     <artifactId>commons-bom</artifactId>
-    <version>22.6.5-SNAPSHOT</version>
+    <version>22.6.5</version>
     <packaging>pom</packaging>
 
     <name>Wren Security Commons - Bill Of Materials</name>
@@ -630,6 +630,6 @@
     </dependencyManagement>
 
   <scm>
-    <tag>22.6.4</tag>
+    <tag>22.6.5</tag>
   </scm>
 </project>
