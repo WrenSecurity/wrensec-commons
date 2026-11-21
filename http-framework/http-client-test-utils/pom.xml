@@ -56,5 +56,21 @@
             <groupId>com.xebialabs.restito</groupId>
             <artifactId>restito</artifactId>
         </dependency>
+
+        <!-- Override vulnerable versions pulled by restito -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-core</artifactId>
+        </dependency>
     </dependencies>
 </project>

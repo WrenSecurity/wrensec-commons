@@ -12,9 +12,11 @@
  * information: "Portions copyright [year] [name of copyright owner]".
  *
  * Copyright 2016 ForgeRock AS.
+ * Portions Copyright 2026 Wren Security.
  */
 package org.forgerock.http.servlet;
 
+import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -37,7 +39,7 @@ public class ServletTest extends BindingTest {
     @Override
     protected int startServer() throws Exception {
         server.start();
-        return server.getConnectors()[0].getLocalPort();
+        return ((NetworkConnector) server.getConnectors()[0]).getLocalPort();
     }
 
     @Override
